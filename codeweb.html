@@ -1,0 +1,3139 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visual Studio Code — Web &amp; GitHub Edition</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- VS Code Codicons & Inter / JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons@0.0.36/dist/codicon.css" />
+  <style>
+    :root {
+      --vsc-titlebar-bg: #323233;
+      --vsc-activitybar-bg: #333333;
+      --vsc-sidebar-bg: #252526;
+      --vsc-editor-bg: #1e1e1e;
+      --vsc-tab-inactive-bg: #2d2d2d;
+      --vsc-border: #2b2b2b;
+      --vsc-panel-border: #414141;
+      --vsc-accent: #007acc;
+      --vsc-fg: #cccccc;
+      --vsc-fg-muted: #858585;
+      --vsc-hover: #2a2d2e;
+      --vsc-selection: #37373d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--vsc-editor-bg);
+      color: var(--vsc-fg);
+      user-select: none;
+    }
+
+    .font-mono-vsc {
+      font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+    }
+
+    /* Authentic VS Code Scrollbars */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(121, 121, 121, 0.35);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 100, 100, 0.6);
+    }
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    /* Resizer handles */
+    .resizer-x {
+      width: 4px;
+      cursor: col-resize;
+      background: transparent;
+      transition: background-color 0.15s ease;
+      z-index: 25;
+    }
+    .resizer-x:hover, .resizer-x.active {
+      background-color: #007acc;
+    }
+
+    .resizer-y {
+      height: 4px;
+      cursor: row-resize;
+      background: transparent;
+      transition: background-color 0.15s ease;
+      z-index: 25;
+    }
+    .resizer-y:hover, .resizer-y.active {
+      background-color: #007acc;
+    }
+
+    /* Menu dropdown */
+    .vsc-menu-dropdown {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Toast animation */
+    @keyframes vscSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .vsc-toast {
+      animation: vscSlideUp 0.18s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen w-screen bg-[#1e1e1e] text-[#cccccc]">
+
+  <!-- =========================================================
+       1. VS CODE TOP TITLE BAR & MENU BAR
+       ========================================================= -->
+  <header id="title-bar" class="h-[35px] bg-[#323233] border-b border-[#252526] px-2 flex items-center justify-between gap-2 shrink-0 z-40">
+    <!-- Left: VS Code Logo + Native Menus -->
+    <div class="flex items-center gap-1 min-w-0">
+      <!-- VS Code Ribbon Icon -->
+      <div class="w-7 h-7 flex items-center justify-center shrink-0" title="Visual Studio Code — Web Edition">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none">
+          <path d="M17.5 2L8.7 10.1L4.2 6.7L2 7.8V16.2L4.2 17.3L8.7 13.9L17.5 22L22 19.8V4.2L17.5 2ZM17.5 16.4L11.6 12L17.5 7.6V16.4Z" fill="#007ACC"/>
+        </svg>
+      </div>
+
+      <!-- Menu Bar Items -->
+      <nav id="top-menubar" class="hidden lg:flex items-center text-[12px] text-[#cccccc]">
+        <button data-menu="file" class="menu-trigger px-2 py-1 rounded hover:bg-[#454546] transition-colors">File</button>
+        <button data-menu="edit" class="menu-trigger px-2 py-1 rounded hover:bg-[#454546] transition-colors">Edit</button>
+        <button data-menu="view" class="menu-trigger px-2 py-1 rounded hover:bg-[#454546] transition-colors">View</button>
+        <button data-menu="go" class="menu-trigger px-2 py-1 rounded hover:bg-[#454546] transition-colors">Go</button>
+        <button data-menu="git" class="menu-trigger px-2 py-1 rounded hover:bg-[#454546] transition-colors">Git</button>
+        <button data-menu="terminal" class="menu-trigger px-2 py-1 rounded hover:bg-[#454546] transition-colors">Terminal</button>
+        <button data-menu="help" class="menu-trigger px-2 py-1 rounded hover:bg-[#454546] transition-colors">Help</button>
+      </nav>
+    </div>
+
+    <!-- Center: VS Code Command Center Search Pill -->
+    <div class="flex-1 max-w-md flex items-center justify-center min-w-0">
+      <button id="command-center-btn" title="Quick Open & Command Palette (Ctrl+P / Ctrl+Shift+P)" class="w-full max-w-[380px] h-[24px] px-3 rounded-[6px] bg-[#29292a] hover:bg-[#383839] border border-[#454545] flex items-center justify-center gap-2 text-[12px] text-[#cccccc] transition-colors truncate">
+        <i class="codicon codicon-search text-[12px] text-[#969696]"></i>
+        <span id="command-center-label" class="truncate">my-web-app — Visual Studio Code</span>
+      </button>
+    </div>
+
+    <!-- Right: Layout Controls + Preview + GitHub Commit & Push Button -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <!-- Layout Toggle Buttons (Authentic VS Code top-right icons) -->
+      <div class="hidden sm:flex items-center gap-0.5 mr-1">
+        <button id="toggle-primary-sidebar-btn" title="Toggle Primary Side Bar (Ctrl+B)" class="p-1 rounded hover:bg-[#454546] text-[#cccccc]">
+          <i class="codicon codicon-layout-sidebar-left text-[15px]"></i>
+        </button>
+        <button id="toggle-bottom-panel-btn" title="Toggle Panel (Ctrl+`)" class="p-1 rounded hover:bg-[#454546] text-[#cccccc]">
+          <i class="codicon codicon-layout-panel text-[15px]"></i>
+        </button>
+        <button id="toggle-preview-icon-btn" title="Toggle Live Preview Pane" class="p-1 rounded hover:bg-[#454546] text-[#cccccc]">
+          <i class="codicon codicon-open-preview text-[15px]"></i>
+        </button>
+      </div>
+
+      <!-- GitHub Repo Status Pill -->
+      <button id="header-gh-btn" title="Hubungkan / Atur Repository GitHub" class="h-[24px] px-2 rounded bg-[#252526] hover:bg-[#3c3c3c] border border-[#454545] flex items-center gap-1.5 text-[11px] text-[#cccccc] transition-colors">
+        <i class="codicon codicon-github text-[13px]"></i>
+        <span id="header-gh-repo-label" class="hidden md:inline max-w-[130px] truncate">GitHub</span>
+        <span id="header-gh-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+      </button>
+
+      <!-- DEDICATED GITHUB COMMIT & PUSH BUTTON -->
+      <button id="header-commit-push-btn" title="Stage All, Commit & Push ke GitHub (Ctrl+Alt+P)" class="h-[24px] px-2.5 rounded bg-[#2ea043] hover:bg-[#2c974b] active:bg-[#238636] text-white text-[11px] font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+        <i class="codicon codicon-repo-push text-[13px]"></i>
+        <span id="header-commit-label">Commit &amp; Push</span>
+        <span id="header-changes-badge" class="px-1.5 py-[1px] rounded-full bg-black/25 text-[10px] font-bold">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Dropdown Menu Container (Dynamic) -->
+  <div id="menu-dropdown" class="hidden fixed z-50 min-w-[220px] py-1 rounded-[5px] bg-[#252526] border border-[#454545] text-[12px] text-[#cccccc] vsc-menu-dropdown"></div>
+
+  <!-- =========================================================
+       2. MAIN WORKSPACE (ACTIVITY BAR + SIDEBAR + EDITOR + PREVIEW)
+       ========================================================= -->
+  <div class="flex-1 flex min-h-0 overflow-hidden relative">
+
+    <!-- ACTIVITY BAR (Far Left 48px VS Code Bar) -->
+    <aside id="activity-bar" class="w-[48px] bg-[#333333] flex flex-col items-center justify-between shrink-0 z-30">
+      <div class="flex flex-col items-center w-full">
+        <button data-activity="explorer" title="Explorer (Ctrl+Shift+E)" class="activity-btn relative w-full h-[48px] flex items-center justify-center text-white border-l-2 border-[#007acc]">
+          <i class="codicon codicon-files text-[22px]"></i>
+        </button>
+        <button data-activity="search" title="Search (Ctrl+Shift+F)" class="activity-btn relative w-full h-[48px] flex items-center justify-center text-[#858585] hover:text-white border-l-2 border-transparent">
+          <i class="codicon codicon-search text-[22px]"></i>
+        </button>
+        <button data-activity="git" title="Source Control — GitHub (Ctrl+Shift+G)" class="activity-btn relative w-full h-[48px] flex items-center justify-center text-[#858585] hover:text-white border-l-2 border-transparent">
+          <i class="codicon codicon-source-control text-[22px]"></i>
+          <span id="activity-git-badge" class="hidden absolute bottom-2 right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#007acc] text-white text-[10px] font-bold flex items-center justify-center">0</span>
+        </button>
+        <button data-activity="extensions" title="Extensions & Live Preview" class="activity-btn relative w-full h-[48px] flex items-center justify-center text-[#858585] hover:text-white border-l-2 border-transparent">
+          <i class="codicon codicon-extensions text-[22px]"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col items-center w-full pb-1">
+        <button id="activity-account-btn" title="Akun & Repository GitHub" class="relative w-full h-[48px] flex items-center justify-center text-[#858585] hover:text-white">
+          <i class="codicon codicon-account text-[22px]"></i>
+          <span id="activity-gh-dot" class="absolute bottom-2.5 right-2.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-[#333333]"></span>
+        </button>
+        <button id="activity-settings-btn" title="Manage / Settings (Ctrl+,)" class="w-full h-[48px] flex items-center justify-center text-[#858585] hover:text-white">
+          <i class="codicon codicon-settings-gear text-[22px]"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- PRIMARY SIDEBAR -->
+    <aside id="primary-sidebar" style="width: 260px;" class="bg-[#252526] flex flex-col shrink-0 min-w-[170px] max-w-[520px] z-20">
+
+      <!-- VIEW: EXPLORER -->
+      <div id="view-explorer" class="flex-1 flex flex-col min-h-0">
+        <div class="h-[35px] px-4 flex items-center justify-between text-[11px] font-normal tracking-wider text-[#bbbbbb] uppercase shrink-0">
+          <span>Explorer</span>
+          <div class="flex items-center gap-0.5">
+            <button id="btn-new-file" title="New File..." class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-new-file text-[14px]"></i>
+            </button>
+            <button id="btn-new-folder" title="New Folder..." class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-new-folder text-[14px]"></i>
+            </button>
+            <button id="btn-collapse-folders" title="Collapse Folders in Explorer" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-collapse-all text-[14px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- OPEN EDITORS SECTION -->
+        <div class="border-t border-[#2b2b2b]">
+          <button id="toggle-open-editors-btn" class="w-full h-[22px] px-1.5 flex items-center gap-1 text-[11px] font-bold text-[#cccccc] hover:bg-[#2a2d2e] uppercase">
+            <i id="open-editors-chevron" class="codicon codicon-chevron-down text-[12px]"></i>
+            <span>Open Editors</span>
+          </button>
+          <div id="open-editors-list" class="py-0.5 max-h-36 overflow-y-auto"></div>
+        </div>
+
+        <!-- WORKSPACE PROJECT SECTION -->
+        <div class="flex-1 flex flex-col min-h-0 border-t border-[#2b2b2b]">
+          <div class="h-[22px] px-1.5 flex items-center justify-between text-[11px] font-bold text-[#cccccc] bg-[#252526] uppercase shrink-0">
+            <div class="flex items-center gap-1 truncate">
+              <i class="codicon codicon-chevron-down text-[12px]"></i>
+              <span id="explorer-workspace-title" class="truncate">MY-WEB-APP</span>
+            </div>
+            <button id="btn-reset-workspace" title="Reset Proyek Contoh" class="p-0.5 rounded hover:bg-[#37373d] text-[#858585] hover:text-white">
+              <i class="codicon codicon-refresh text-[12px]"></i>
+            </button>
+          </div>
+
+          <!-- Hierarchical Folder & File Tree -->
+          <div id="file-tree" class="flex-1 overflow-y-auto py-0.5 text-[13px]"></div>
+        </div>
+      </div>
+
+      <!-- VIEW: SEARCH -->
+      <div id="view-search" class="hidden flex-1 flex flex-col min-h-0">
+        <div class="h-[35px] px-4 flex items-center justify-between text-[11px] tracking-wider text-[#bbbbbb] uppercase shrink-0">
+          <span>Search</span>
+          <button id="clear-search-btn" title="Clear Search Results" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+            <i class="codicon codicon-clear-all text-[14px]"></i>
+          </button>
+        </div>
+        <div class="px-3 pb-2 space-y-1.5">
+          <div class="relative">
+            <input id="global-search-input" type="text" placeholder="Search" class="w-full h-[26px] px-2 pr-7 rounded-[2px] bg-[#3c3c3c] border border-transparent focus:border-[#007acc] text-[13px] text-white placeholder-[#858585] outline-none" />
+            <i class="codicon codicon-case-sensitive text-[14px] text-[#858585] absolute right-2 top-1.5"></i>
+          </div>
+          <div id="search-summary" class="text-[11px] text-[#858585]"></div>
+        </div>
+        <div id="search-results" class="flex-1 overflow-y-auto px-2 pb-2 text-[12px] space-y-1"></div>
+      </div>
+
+      <!-- VIEW: SOURCE CONTROL (GIT & GITHUB) -->
+      <div id="view-git" class="hidden flex-1 flex flex-col min-h-0">
+        <div class="h-[35px] px-4 flex items-center justify-between text-[11px] tracking-wider text-[#bbbbbb] uppercase shrink-0">
+          <span>Source Control</span>
+          <div class="flex items-center gap-0.5">
+            <button id="git-pull-btn" title="Pull dari GitHub (git pull)" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-repo-pull text-[14px]"></i>
+            </button>
+            <button id="git-push-icon-btn" title="Commit & Push ke GitHub" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-repo-push text-[14px]"></i>
+            </button>
+            <button id="git-discard-all-btn" title="Discard All Changes" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-discard text-[14px]"></i>
+            </button>
+            <button id="git-config-gear-btn" title="Konfigurasi GitHub Repository" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-gear text-[14px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Connected GitHub Target Banner -->
+        <div class="mx-3 mb-2 px-2.5 py-1.5 rounded-[3px] bg-[#1e1e1e] border border-[#3c3c3c] flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 text-[11px] font-medium text-[#cccccc] truncate">
+              <i class="codicon codicon-github text-[13px] shrink-0"></i>
+              <span id="git-sidebar-repo" class="truncate">local-sandbox/my-web-app</span>
+            </div>
+            <div id="git-sidebar-status" class="text-[10px] text-amber-400 truncate mt-0.5">
+              Sandbox Lokal • Klik gear untuk GitHub
+            </div>
+          </div>
+          <button id="git-banner-connect-btn" class="px-2 py-0.5 rounded bg-[#0e639c] hover:bg-[#1177bb] text-white text-[10px] font-medium shrink-0">
+            Atur
+          </button>
+        </div>
+
+        <!-- Commit Input & Primary Commit & Push Button -->
+        <div class="px-3 pb-2.5 space-y-1.5 border-b border-[#2b2b2b]">
+          <textarea id="git-commit-message" rows="2" placeholder="Message (Ctrl+Enter to commit & push)" class="w-full p-2 rounded-[2px] bg-[#3c3c3c] border border-transparent focus:border-[#007acc] text-[12px] text-white placeholder-[#858585] resize-none outline-none"></textarea>
+
+          <div class="flex items-stretch gap-1">
+            <button id="sidebar-commit-push-btn" class="flex-1 h-[28px] px-2.5 rounded-[2px] bg-[#2ea043] hover:bg-[#2c974b] active:bg-[#238636] text-white text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+              <i class="codicon codicon-check text-[14px]"></i>
+              <span>Commit &amp; Push</span>
+            </button>
+            <button id="sidebar-commit-only-btn" title="Commit Lokal Saja (Tanpa Push)" class="px-2 h-[28px] rounded-[2px] bg-[#0e639c] hover:bg-[#1177bb] text-white text-[11px] font-medium flex items-center justify-center transition-colors cursor-pointer">
+              <i class="codicon codicon-git-commit text-[14px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Changes List -->
+        <div class="flex-1 flex flex-col min-h-0">
+          <div class="h-[22px] px-2 flex items-center justify-between text-[11px] font-bold text-[#cccccc] uppercase shrink-0">
+            <div class="flex items-center gap-1">
+              <i class="codicon codicon-chevron-down text-[12px]"></i>
+              <span>Changes</span>
+            </div>
+            <span id="git-changes-count" class="px-1.5 rounded-full bg-[#37373d] text-[10px] font-semibold">0</span>
+          </div>
+          <div id="git-changes-list" class="flex-1 overflow-y-auto px-1 py-0.5 text-[12px]"></div>
+        </div>
+
+        <!-- Graph / Commits History -->
+        <div class="border-t border-[#2b2b2b] max-h-40 flex flex-col shrink-0">
+          <div class="h-[22px] px-2 flex items-center justify-between text-[11px] font-bold text-[#cccccc] uppercase">
+            <div class="flex items-center gap-1">
+              <i class="codicon codicon-chevron-down text-[12px]"></i>
+              <span>Commits</span>
+            </div>
+            <span id="git-branch-pill" class="text-[10px] font-mono-vsc text-[#4ec9b0] lowercase">main</span>
+          </div>
+          <div id="git-history-list" class="overflow-y-auto px-2 pb-2 space-y-1 text-[11px]"></div>
+        </div>
+      </div>
+
+      <!-- VIEW: EXTENSIONS / TOOLS -->
+      <div id="view-extensions" class="hidden flex-1 flex flex-col min-h-0">
+        <div class="h-[35px] px-4 flex items-center justify-between text-[11px] tracking-wider text-[#bbbbbb] uppercase shrink-0">
+          <span>Extensions (Built-in)</span>
+        </div>
+        <div class="p-3 space-y-2.5 overflow-y-auto text-[12px]">
+          <div class="p-2.5 rounded bg-[#1e1e1e] border border-[#333333] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-white flex items-center gap-1.5">
+                <i class="codicon codicon-github text-[#38bdf8]"></i>
+                GitHub Pull &amp; Push
+              </span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#2ea043]/20 text-[#3fb950]">Installed</span>
+            </div>
+            <p class="text-[11px] text-[#969696]">Atomic Git tree commits, branch creation, pull, dan side-by-side diff langsung ke GitHub API.</p>
+            <button id="ext-open-gh-btn" class="w-full py-1 rounded bg-[#0e639c] hover:bg-[#1177bb] text-white text-[11px] font-medium">
+              Konfigurasi GitHub
+            </button>
+          </div>
+
+          <div class="p-2.5 rounded bg-[#1e1e1e] border border-[#333333] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-white flex items-center gap-1.5">
+                <i class="codicon codicon-open-preview text-[#4ec9b0]"></i>
+                Live Server Preview
+              </span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#2ea043]/20 text-[#3fb950]">Installed</span>
+            </div>
+            <p class="text-[11px] text-[#969696]">Menjalankan bundling otomatis HTML, CSS, dan JS secara real-time di panel sebelah kanan.</p>
+            <button id="ext-toggle-preview-btn" class="w-full py-1 rounded bg-[#37373d] hover:bg-[#45454d] text-white text-[11px] font-medium">
+              Buka / Tutup Live Preview
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- SIDEBAR HORIZONTAL RESIZER -->
+    <div id="sidebar-resizer" class="resizer-x shrink-0"></div>
+
+    <!-- =========================================================
+         3. CENTER EDITOR AREA + RIGHT LIVE PREVIEW + BOTTOM PANEL
+         ========================================================= -->
+    <div class="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
+
+      <!-- TOP EDITOR + PREVIEW ROW -->
+      <div class="flex-1 flex min-h-0 overflow-hidden relative">
+
+        <!-- MAIN EDITOR GROUP -->
+        <main class="flex-1 flex flex-col min-w-0 bg-[#1e1e1e] relative">
+
+          <!-- Editor Tabs Bar (35px height) -->
+          <div class="h-[35px] bg-[#252526] flex items-center justify-between border-b border-[#252526] shrink-0">
+            <div id="tabs-bar" class="flex-1 h-full flex items-center overflow-x-auto"></div>
+            <!-- Editor Group Right Actions -->
+            <div class="flex items-center gap-0.5 px-2 shrink-0">
+              <button id="tab-action-diff" title="Open Changes (Diff with HEAD)" class="hidden p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+                <i class="codicon codicon-diff text-[15px]"></i>
+              </button>
+              <button id="tab-action-preview" title="Open Live Preview to the Side" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+                <i class="codicon codicon-open-preview text-[15px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Breadcrumbs Bar (22px height) -->
+          <div id="breadcrumbs-bar" class="h-[22px] bg-[#1e1e1e] px-3 flex items-center gap-1 text-[12px] text-[#a9a9a9] border-b border-[#252526] shrink-0 truncate">
+            <span>my-web-app</span>
+          </div>
+
+          <!-- WELCOME TAB VIEW (Authentic VS Code Get Started) -->
+          <div id="welcome-view" class="hidden flex-1 overflow-y-auto p-6 sm:p-12 bg-[#1e1e1e]">
+            <div class="max-w-3xl mx-auto">
+              <h1 class="text-2xl sm:text-3xl font-light text-white mb-1">Visual Studio Code</h1>
+              <p class="text-sm text-[#858585] mb-8">Web &amp; GitHub Edition — Siap di-deploy di GitHub Pages</p>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h2 class="text-sm font-semibold text-[#cccccc] mb-3">Start</h2>
+                  <ul class="space-y-2.5 text-[13px]">
+                    <li>
+                      <button id="welcome-new-file" class="flex items-center gap-2 text-[#3794ff] hover:underline">
+                        <i class="codicon codicon-new-file"></i>
+                        <span>New File...</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button id="welcome-connect-gh" class="flex items-center gap-2 text-[#3794ff] hover:underline">
+                        <i class="codicon codicon-github"></i>
+                        <span>Connect GitHub Repository...</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button id="welcome-commit-push" class="flex items-center gap-2 text-[#3fb950] hover:underline">
+                        <i class="codicon codicon-repo-push"></i>
+                        <span>Commit &amp; Push Changes to GitHub</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button id="welcome-open-preview" class="flex items-center gap-2 text-[#3794ff] hover:underline">
+                        <i class="codicon codicon-open-preview"></i>
+                        <span>Open Live Web Preview</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h2 class="text-sm font-semibold text-[#cccccc] mb-3">Keyboard Shortcuts</h2>
+                  <div class="space-y-2 text-[12px] text-[#969696]">
+                    <div class="flex items-center justify-between">
+                      <span>Show All Commands</span>
+                      <kbd class="px-1.5 py-0.5 rounded bg-[#2d2d2d] border border-[#3c3c3c] text-[#cccccc]">Ctrl+Shift+P</kbd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span>Quick Open File</span>
+                      <kbd class="px-1.5 py-0.5 rounded bg-[#2d2d2d] border border-[#3c3c3c] text-[#cccccc]">Ctrl+P</kbd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span>Source Control (Git)</span>
+                      <kbd class="px-1.5 py-0.5 rounded bg-[#2d2d2d] border border-[#3c3c3c] text-[#cccccc]">Ctrl+Shift+G</kbd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span>Toggle Terminal</span>
+                      <kbd class="px-1.5 py-0.5 rounded bg-[#2d2d2d] border border-[#3c3c3c] text-[#cccccc]">Ctrl+`</kbd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SETTINGS TAB VIEW -->
+          <div id="settings-view" class="hidden flex-1 overflow-y-auto p-6 bg-[#1e1e1e]">
+            <div class="max-w-2xl mx-auto space-y-6">
+              <div>
+                <h2 class="text-lg font-medium text-white">User Settings</h2>
+                <p class="text-xs text-[#858585]">Pengaturan diterapkan langsung ke Monaco Editor.</p>
+              </div>
+
+              <div class="space-y-4 text-[13px]">
+                <div class="p-3 rounded bg-[#252526] border border-[#333333] flex items-center justify-between gap-4">
+                  <div>
+                    <div class="font-medium text-white">Workbench: Color Theme</div>
+                    <div class="text-xs text-[#858585]">Pilih tema warna Monaco Editor</div>
+                  </div>
+                  <select id="setting-theme" class="h-7 px-2 rounded bg-[#3c3c3c] border border-[#454545] text-xs text-white outline-none">
+                    <option value="vs-dark">Dark+ (Default Dark)</option>
+                    <option value="vs">Light+ (Default Light)</option>
+                    <option value="hc-black">High Contrast Black</option>
+                  </select>
+                </div>
+
+                <div class="p-3 rounded bg-[#252526] border border-[#333333] flex items-center justify-between gap-4">
+                  <div>
+                    <div class="font-medium text-white">Editor: Font Size</div>
+                    <div class="text-xs text-[#858585]">Ukuran font dalam piksel</div>
+                  </div>
+                  <input id="setting-fontsize" type="number" min="11" max="24" value="14" class="w-20 h-7 px-2 rounded bg-[#3c3c3c] border border-[#454545] text-xs text-white outline-none" />
+                </div>
+
+                <div class="p-3 rounded bg-[#252526] border border-[#333333] flex items-center justify-between gap-4">
+                  <div>
+                    <div class="font-medium text-white">Editor: Minimap Enabled</div>
+                    <div class="text-xs text-[#858585]">Tampilkan pratinjau kode mini di sisi kanan editor</div>
+                  </div>
+                  <input id="setting-minimap" type="checkbox" checked class="w-4 h-4 accent-[#007acc]" />
+                </div>
+
+                <div class="p-3 rounded bg-[#252526] border border-[#333333] flex items-center justify-between gap-4">
+                  <div>
+                    <div class="font-medium text-white">Editor: Word Wrap</div>
+                    <div class="text-xs text-[#858585]">Bungkus baris panjang otomatis</div>
+                  </div>
+                  <select id="setting-wordwrap" class="h-7 px-2 rounded bg-[#3c3c3c] border border-[#454545] text-xs text-white outline-none">
+                    <option value="off">off</option>
+                    <option value="on">on</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MONACO CODE EDITOR HOST -->
+          <div id="monaco-editor-container" class="flex-1 w-full min-h-0 relative">
+            <div id="monaco-loading" class="absolute inset-0 flex items-center justify-center bg-[#1e1e1e] text-xs text-[#858585] gap-2">
+              <i class="codicon codicon-loading codicon-modifier-spin text-[16px] text-[#007acc]"></i>
+              <span>Memuat Monaco Editor...</span>
+            </div>
+          </div>
+
+          <!-- MONACO DIFF EDITOR HOST -->
+          <div id="monaco-diff-container" class="hidden flex-1 w-full min-h-0 relative"></div>
+
+        </main>
+
+        <!-- RIGHT LIVE PREVIEW SPLIT PANE -->
+        <section id="preview-pane" class="hidden w-full md:w-[44%] border-l border-[#333333] bg-[#1e1e1e] flex flex-col shrink-0 z-20">
+          <div class="h-[35px] px-3 bg-[#252526] border-b border-[#2b2b2b] flex items-center justify-between gap-2 shrink-0">
+            <div class="flex items-center gap-1.5 text-[12px] text-[#cccccc] truncate">
+              <i class="codicon codicon-globe text-[#4ec9b0]"></i>
+              <span class="truncate">Live Preview — index.html</span>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button id="refresh-preview-btn" title="Reload Preview" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+                <i class="codicon codicon-refresh text-[14px]"></i>
+              </button>
+              <button id="close-preview-btn" title="Close Preview" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+                <i class="codicon codicon-close text-[14px]"></i>
+              </button>
+            </div>
+          </div>
+          <iframe id="preview-iframe" title="Live Preview" sandbox="allow-scripts allow-forms allow-modals" class="w-full flex-1 bg-white border-0"></iframe>
+        </section>
+      </div>
+
+      <!-- BOTTOM PANEL RESIZER -->
+      <div id="bottom-resizer" class="resizer-y shrink-0"></div>
+
+      <!-- =========================================================
+           4. BOTTOM PANEL (PROBLEMS / OUTPUT / TERMINAL)
+           ========================================================= -->
+      <section id="bottom-panel" style="height: 175px;" class="bg-[#1e1e1e] border-t border-[#414141] flex flex-col shrink-0 min-h-[90px] max-h-[450px]">
+        <div class="h-[34px] px-4 flex items-center justify-between border-b border-[#2b2b2b] shrink-0">
+          <div class="flex items-center gap-5 text-[11px] uppercase tracking-wide">
+            <button data-bottom-tab="git-output" class="bottom-tab-btn h-[34px] border-b border-[#e7e7e7] text-white flex items-center gap-1.5">
+              <span>Output (Git)</span>
+            </button>
+            <button data-bottom-tab="terminal" class="bottom-tab-btn h-[34px] border-b border-transparent text-[#858585] hover:text-[#cccccc] flex items-center gap-1.5">
+              <span>Terminal</span>
+            </button>
+            <button data-bottom-tab="problems" class="bottom-tab-btn h-[34px] border-b border-transparent text-[#858585] hover:text-[#cccccc] flex items-center gap-1.5">
+              <span>Problems</span>
+              <span id="problems-badge" class="px-1.5 rounded-full bg-[#37373d] text-[10px]">0</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button id="clear-bottom-btn" title="Clear" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-clear-all text-[14px]"></i>
+            </button>
+            <button id="close-bottom-btn" title="Close Panel" class="p-1 rounded hover:bg-[#37373d] text-[#cccccc]">
+              <i class="codicon codicon-close text-[14px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Git Output Log -->
+        <div id="panel-git-output" class="flex-1 overflow-y-auto px-4 py-2 font-mono-vsc text-[12px] leading-5 space-y-0.5"></div>
+
+        <!-- Interactive Terminal -->
+        <div id="panel-terminal" class="hidden flex-1 overflow-y-auto px-4 py-2 font-mono-vsc text-[12px] leading-5 flex flex-col">
+          <div id="terminal-history" class="space-y-0.5 mb-1">
+            <div class="text-[#858585]">Microsoft Windows / Linux Web Shell [Version 1.0.0]</div>
+            <div class="text-[#cccccc]">Ketik <span class="text-[#4ec9b0]">help</span> untuk melihat perintah <span class="text-[#ce9178]">git</span> dan workspace.</div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[#4ec9b0] shrink-0">PS C:\projects\my-web-app&gt;</span>
+            <input id="terminal-input" type="text" autocomplete="off" spellcheck="false" class="flex-1 bg-transparent text-[#cccccc] outline-none border-0 font-mono-vsc text-[12px]" />
+          </div>
+        </div>
+
+        <!-- Problems View -->
+        <div id="panel-problems" class="hidden flex-1 overflow-y-auto px-4 py-3 text-[12px] text-[#858585]">
+          No problems have been detected in the workspace.
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       5. VS CODE BOTTOM STATUS BAR (22px height)
+       ========================================================= -->
+  <footer id="status-bar" class="h-[22px] bg-[#007acc] text-white text-[12px] flex items-center justify-between shrink-0 z-40">
+    <div class="flex items-center h-full min-w-0">
+      <!-- Far-left Remote / GitHub Host Indicator (Authentic VS Code green/blue corner block) -->
+      <button id="status-remote-btn" title="Hubungkan Repository GitHub" class="h-full px-2.5 bg-[#16825d] hover:bg-[#1a986d] flex items-center gap-1.5 text-white shrink-0 transition-colors">
+        <i class="codicon codicon-remote text-[13px]"></i>
+        <span id="status-remote-text" class="text-[11px] font-medium">GitHub</span>
+      </button>
+
+      <!-- Branch Indicator -->
+      <button id="status-branch-btn" title="Target Branch GitHub" class="h-full px-2 hover:bg-white/15 flex items-center gap-1 shrink-0">
+        <i class="codicon codicon-source-control text-[12px]"></i>
+        <span id="status-branch-name">main</span>
+      </button>
+
+      <!-- Sync / Commit & Push Action -->
+      <button id="status-sync-btn" title="Commit & Push Changes ke GitHub" class="h-full px-2 hover:bg-white/15 flex items-center gap-1 truncate">
+        <i class="codicon codicon-sync text-[12px]"></i>
+        <span id="status-sync-text" class="truncate">Siap Commit &amp; Push</span>
+      </button>
+
+      <!-- Problems Summary -->
+      <button id="status-problems-btn" class="hidden sm:flex h-full px-2 hover:bg-white/15 items-center gap-1.5 shrink-0">
+        <span class="flex items-center gap-0.5"><i class="codicon codicon-error text-[12px]"></i> 0</span>
+        <span class="flex items-center gap-0.5"><i class="codicon codicon-warning text-[12px]"></i> 0</span>
+      </button>
+    </div>
+
+    <div class="flex items-center h-full shrink-0 text-[11px]">
+      <span id="status-cursor" class="hidden sm:flex items-center h-full px-2 hover:bg-white/15">Ln 1, Col 1</span>
+      <span id="status-indent" class="hidden md:flex items-center h-full px-2 hover:bg-white/15">Spaces: 2</span>
+      <span class="hidden md:flex items-center h-full px-2 hover:bg-white/15">UTF-8</span>
+      <span class="hidden lg:flex items-center h-full px-2 hover:bg-white/15">LF</span>
+      <span id="status-lang" class="flex items-center h-full px-2.5 hover:bg-white/15 font-medium">HTML</span>
+      <button id="status-bell-btn" title="Notifications" class="h-full px-2 hover:bg-white/15 flex items-center">
+        <i class="codicon codicon-bell text-[12px]"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- =========================================================
+       6. VS CODE COMMAND PALETTE & QUICK OPEN OVERLAY
+       ========================================================= -->
+  <div id="palette-backdrop" class="hidden fixed inset-0 z-50 bg-black/25 flex justify-center pt-[38px] px-4">
+    <div class="w-full max-w-[600px] h-fit rounded-[6px] bg-[#252526] border border-[#454545] shadow-2xl overflow-hidden">
+      <div class="p-1.5 border-b border-[#333333]">
+        <input id="palette-input" type="text" autocomplete="off" spellcheck="false" placeholder="Ketik nama file atau '>' untuk perintah..." class="w-full h-[28px] px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#007acc] text-[13px] text-white outline-none" />
+      </div>
+      <div id="palette-list" class="max-h-[320px] overflow-y-auto py-1 text-[13px]"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       7. MODAL DIALOG & NOTIFICATIONS
+       ========================================================= -->
+  <div id="modal-backdrop" class="hidden fixed inset-0 z-50 bg-black/55 flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-[6px] bg-[#252526] border border-[#454545] shadow-2xl overflow-hidden">
+      <div class="px-4 py-2.5 bg-[#2d2d2e] border-b border-[#3c3c3c] flex items-center justify-between">
+        <h3 id="modal-title" class="text-[13px] font-semibold text-white">Modal</h3>
+        <button id="modal-close-btn" class="p-1 rounded hover:bg-[#3c3c3c] text-[#cccccc]">
+          <i class="codicon codicon-close text-[14px]"></i>
+        </button>
+      </div>
+      <div id="modal-body" class="p-4 text-[12px] text-[#cccccc] space-y-3"></div>
+      <div id="modal-footer" class="px-4 py-2.5 bg-[#1e1e1e] border-t border-[#333333] flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-7 right-3 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- Monaco AMD Loader -->
+  <script>
+    window.require = {
+      paths: {
+        vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs'
+      }
+    };
+    window.MonacoEnvironment = {
+      getWorkerUrl: function () {
+        const blob = new Blob(
+          [
+            `self.MonacoEnvironment = { baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/' };
+             importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/base/worker/workerMain.js');`
+          ],
+          { type: 'text/javascript' }
+        );
+        return URL.createObjectURL(blob);
+      }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ==========================================
+      // 1. DEFAULT WORKSPACE PROJECT
+      // ==========================================
+      const DEFAULT_FILES = {
+        'index.html': `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aplikasi Web Saya</title>
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+  <main class="container">
+    <span class="pill">Deployed via GitHub Pages</span>
+    <h1>Halo dari VS Code Web IDE!</h1>
+    <p>Edit kode di Monaco Editor, lihat perubahan di Live Preview, lalu klik <strong>Commit &amp; Push</strong> di pojok kanan atas untuk mengirim langsung ke GitHub.</p>
+    <button id="action-btn">Klik Counter: 0</button>
+  </main>
+  <script src="src/app.js"><\/script>
+</body>
+</html>`,
+        'src/style.css': `* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: radial-gradient(circle at top, #1e293b, #0f172a);
+  color: #f8fafc;
+  padding: 1.5rem;
+}
+
+.container {
+  max-width: 440px;
+  width: 100%;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  padding: 2rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+.pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.14);
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+p {
+  color: #cbd5e1;
+  line-height: 1.6;
+  font-size: 0.92rem;
+  margin-bottom: 1.4rem;
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #2ea043;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+button:hover {
+  background: #2c974b;
+  transform: translateY(-1px);
+}`,
+        'src/app.js': `const actionBtn = document.getElementById('action-btn');
+let clicks = 0;
+
+if (actionBtn) {
+  actionBtn.addEventListener('click', () => {
+    clicks += 1;
+    actionBtn.textContent = \`Klik Counter: \${clicks}\`;
+  });
+}`,
+        'README.md': `# My Web App
+
+Proyek ini dikelola menggunakan **VS Code Web IDE** dan siap di-deploy ke **GitHub Pages**.
+
+## Fitur Utama
+- Monaco Editor asli (IntelliSense, Minimap, Multi-cursor, Find & Replace)
+- Side-by-Side Git Diff Viewer
+- One-Click **Commit & Push** langsung ke GitHub REST API`
+      };
+
+      const INITIAL_HEAD_FILES = {
+        ...DEFAULT_FILES,
+        'README.md': `# My Web App
+
+Proyek ini dikelola menggunakan **VS Code Web IDE**.`
+      };
+
+      // ==========================================
+      // 2. APPLICATION STATE (IN-MEMORY)
+      // ==========================================
+      const state = {
+        files: { ...DEFAULT_FILES },
+        headFiles: { ...INITIAL_HEAD_FILES },
+        expandedFolders: new Set(['src']),
+        openEditorsExpanded: true,
+        openTabs: ['index.html', 'src/style.css', 'src/app.js'],
+        activeTab: 'index.html', // Can be file path, 'diff:<path>', 'welcome', or 'settings'
+        activeActivity: 'explorer',
+        sidebarVisible: true,
+        bottomVisible: true,
+        previewVisible: false,
+        activeBottomTab: 'git-output',
+        isPushing: false,
+        terminalHistoryCmds: [],
+        terminalHistoryIdx: -1,
+        editorSettings: {
+          theme: 'vs-dark',
+          fontSize: 14,
+          minimap: true,
+          wordWrap: 'off'
+        },
+        github: {
+          token: '',
+          owner: '',
+          repo: '',
+          branch: 'main',
+          connected: false
+        },
+        commits: [
+          {
+            sha: '8f3a1c2',
+            message: 'feat: initial project structure',
+            author: 'developer',
+            date: 'Baru saja',
+            remote: false
+          }
+        ]
+      };
+
+      // Support optional URL parameters (?owner=...&repo=...&branch=...) for GitHub Pages convenience
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('owner')) state.github.owner = params.get('owner');
+        if (params.get('repo')) state.github.repo = params.get('repo');
+        if (params.get('branch')) state.github.branch = params.get('branch');
+      } catch (_) {}
+
+      // Monaco instances & models
+      let monacoApi = null;
+      let codeEditor = null;
+      let diffEditor = null;
+      const monacoModels = {};
+      const monacoViewStates = {};
+      let suppressModelSync = false;
+
+      // ==========================================
+      // 3. DOM REFERENCES
+      // ==========================================
+      const els = {
+        primarySidebar: document.getElementById('primary-sidebar'),
+        sidebarResizer: document.getElementById('sidebar-resizer'),
+        bottomPanel: document.getElementById('bottom-panel'),
+        bottomResizer: document.getElementById('bottom-resizer'),
+        fileTree: document.getElementById('file-tree'),
+        openEditorsList: document.getElementById('open-editors-list'),
+        openEditorsChevron: document.getElementById('open-editors-chevron'),
+        explorerWorkspaceTitle: document.getElementById('explorer-workspace-title'),
+        tabsBar: document.getElementById('tabs-bar'),
+        breadcrumbsBar: document.getElementById('breadcrumbs-bar'),
+        tabActionDiff: document.getElementById('tab-action-diff'),
+        welcomeView: document.getElementById('welcome-view'),
+        settingsView: document.getElementById('settings-view'),
+        monacoEditorContainer: document.getElementById('monaco-editor-container'),
+        monacoDiffContainer: document.getElementById('monaco-diff-container'),
+        monacoLoading: document.getElementById('monaco-loading'),
+        previewPane: document.getElementById('preview-pane'),
+        previewIframe: document.getElementById('preview-iframe'),
+        panelGitOutput: document.getElementById('panel-git-output'),
+        panelTerminal: document.getElementById('panel-terminal'),
+        panelProblems: document.getElementById('panel-problems'),
+        terminalHistory: document.getElementById('terminal-history'),
+        terminalInput: document.getElementById('terminal-input'),
+        headerCommitPushBtn: document.getElementById('header-commit-push-btn'),
+        headerCommitLabel: document.getElementById('header-commit-label'),
+        headerChangesBadge: document.getElementById('header-changes-badge'),
+        headerGhRepoLabel: document.getElementById('header-gh-repo-label'),
+        headerGhDot: document.getElementById('header-gh-dot'),
+        commandCenterLabel: document.getElementById('command-center-label'),
+        activityGitBadge: document.getElementById('activity-git-badge'),
+        activityGhDot: document.getElementById('activity-gh-dot'),
+        gitSidebarRepo: document.getElementById('git-sidebar-repo'),
+        gitSidebarStatus: document.getElementById('git-sidebar-status'),
+        gitCommitMessage: document.getElementById('git-commit-message'),
+        sidebarCommitPushBtn: document.getElementById('sidebar-commit-push-btn'),
+        sidebarCommitOnlyBtn: document.getElementById('sidebar-commit-only-btn'),
+        gitChangesCount: document.getElementById('git-changes-count'),
+        gitChangesList: document.getElementById('git-changes-list'),
+        gitHistoryList: document.getElementById('git-history-list'),
+        gitBranchPill: document.getElementById('git-branch-pill'),
+        statusRemoteText: document.getElementById('status-remote-text'),
+        statusBranchName: document.getElementById('status-branch-name'),
+        statusSyncText: document.getElementById('status-sync-text'),
+        statusCursor: document.getElementById('status-cursor'),
+        statusLang: document.getElementById('status-lang'),
+        paletteBackdrop: document.getElementById('palette-backdrop'),
+        paletteInput: document.getElementById('palette-input'),
+        paletteList: document.getElementById('palette-list'),
+        menuDropdown: document.getElementById('menu-dropdown'),
+        modalBackdrop: document.getElementById('modal-backdrop'),
+        modalTitle: document.getElementById('modal-title'),
+        modalBody: document.getElementById('modal-body'),
+        modalFooter: document.getElementById('modal-footer'),
+        toastContainer: document.getElementById('toast-container')
+      };
+
+      // ==========================================
+      // 4. HELPERS & CODICON FILE ICONS
+      // ==========================================
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function utf8ToBase64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+      }
+
+      function base64ToUtf8(base64Str) {
+        const clean = base64Str.replace(/\s/g, '');
+        const binary = atob(clean);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return new TextDecoder('utf-8').decode(bytes);
+      }
+
+      function getMonacoLanguage(filename) {
+        if (!filename) return 'plaintext';
+        const ext = filename.split('.').pop().toLowerCase();
+        const map = {
+          html: 'html',
+          htm: 'html',
+          css: 'css',
+          scss: 'scss',
+          js: 'javascript',
+          jsx: 'javascript',
+          ts: 'typescript',
+          tsx: 'typescript',
+          json: 'json',
+          md: 'markdown',
+          py: 'python',
+          yml: 'yaml',
+          yaml: 'yaml',
+          xml: 'xml',
+          svg: 'xml',
+          sh: 'shell'
+        };
+        return map[ext] || 'plaintext';
+      }
+
+      function getLanguageDisplay(filename) {
+        const lang = getMonacoLanguage(filename);
+        const labels = {
+          html: 'HTML',
+          css: 'CSS',
+          scss: 'SCSS',
+          javascript: 'JavaScript',
+          typescript: 'TypeScript',
+          json: 'JSON',
+          markdown: 'Markdown',
+          python: 'Python',
+          yaml: 'YAML',
+          xml: 'XML',
+          shell: 'Shell Script',
+          plaintext: 'Plain Text'
+        };
+        return labels[lang] || lang.toUpperCase();
+      }
+
+      function getFileCodicon(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        switch (ext) {
+          case 'html':
+            return { icon: 'codicon-code', color: 'text-[#e34c26]' };
+          case 'css':
+          case 'scss':
+            return { icon: 'codicon-symbol-color', color: 'text-[#563d7c]' };
+          case 'js':
+          case 'jsx':
+            return { icon: 'codicon-symbol-method', color: 'text-[#f1e05a]' };
+          case 'ts':
+          case 'tsx':
+            return { icon: 'codicon-symbol-class', color: 'text-[#3178c6]' };
+          case 'json':
+            return { icon: 'codicon-json', color: 'text-[#cbcb41]' };
+          case 'md':
+            return { icon: 'codicon-markdown', color: 'text-[#519aba]' };
+          case 'py':
+            return { icon: 'codicon-symbol-namespace', color: 'text-[#3572A5]' };
+          default:
+            return { icon: 'codicon-file', color: 'text-[#cccccc]' };
+        }
+      }
+
+      function showNotification(message, type = 'info') {
+        const iconMap = {
+          info: 'codicon-info text-[#3794ff]',
+          success: 'codicon-pass-filled text-[#3fb950]',
+          warn: 'codicon-warning text-[#cca700]',
+          error: 'codicon-error text-[#f14c4c]'
+        };
+        const toast = document.createElement('div');
+        toast.className = 'vsc-toast pointer-events-auto rounded-[4px] bg-[#252526] border border-[#454545] shadow-2xl p-3 flex items-start gap-2.5 text-[12px] text-[#cccccc]';
+        toast.innerHTML = `
+          <i class="codicon ${iconMap[type] || iconMap.info} text-[16px] shrink-0 mt-0.5"></i>
+          <div class="flex-1 min-w-0 leading-snug break-words">${escapeHtml(message)}</div>
+          <button class="text-[#858585] hover:text-white shrink-0"><i class="codicon codicon-close text-[12px]"></i></button>
+        `;
+        toast.querySelector('button').onclick = () => toast.remove();
+        els.toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 0.2s ease';
+          setTimeout(() => toast.remove(), 220);
+        }, 4200);
+      }
+
+      function logGit(msg, level = 'normal') {
+        const colors = {
+          normal: 'text-[#cccccc]',
+          cmd: 'text-[#3794ff] font-medium',
+          success: 'text-[#3fb950]',
+          warn: 'text-[#cca700]',
+          error: 'text-[#f14c4c]',
+          info: 'text-[#9cdcfe]'
+        };
+        const ts = new Date().toLocaleTimeString('id-ID', { hour12: false });
+        const row = document.createElement('div');
+        row.className = colors[level] || colors.normal;
+        row.textContent = `${ts} [git] ${msg}`;
+        els.panelGitOutput.appendChild(row);
+        els.panelGitOutput.scrollTop = els.panelGitOutput.scrollHeight;
+      }
+
+      function openModal({ title, bodyHtml, buttons }) {
+        els.modalTitle.textContent = title;
+        els.modalBody.innerHTML = bodyHtml;
+        els.modalFooter.innerHTML = '';
+
+        buttons.forEach((btn) => {
+          const el = document.createElement('button');
+          el.textContent = btn.label;
+          el.className = btn.success
+            ? 'px-3 py-1.5 rounded-[2px] bg-[#2ea043] hover:bg-[#2c974b] text-white text-[12px] font-medium cursor-pointer'
+            : btn.primary
+            ? 'px-3 py-1.5 rounded-[2px] bg-[#0e639c] hover:bg-[#1177bb] text-white text-[12px] font-medium cursor-pointer'
+            : 'px-3 py-1.5 rounded-[2px] bg-[#3a3d41] hover:bg-[#45494e] text-[#cccccc] text-[12px] cursor-pointer';
+          el.onclick = () => btn.onClick && btn.onClick();
+          els.modalFooter.appendChild(el);
+        });
+
+        els.modalBackdrop.classList.remove('hidden');
+        els.modalBackdrop.onclick = (e) => {
+          if (e.target === els.modalBackdrop) closeModal();
+        };
+
+        els.modalBody.querySelectorAll('input').forEach((inp) => {
+          inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const lastBtn = els.modalFooter.querySelector('button:last-child');
+              if (lastBtn) lastBtn.click();
+            }
+          });
+        });
+
+        const firstInput = els.modalBody.querySelector('input, textarea');
+        if (firstInput) setTimeout(() => firstInput.focus(), 30);
+      }
+
+      function closeModal() {
+        els.modalBackdrop.classList.add('hidden');
+      }
+
+      // ==========================================
+      // 5. MONACO EDITOR INITIALIZATION & MODELS
+      // ==========================================
+      function ensureMonacoModel(path) {
+        if (!monacoApi || !Object.prototype.hasOwnProperty.call(state.files, path)) return null;
+        if (!monacoModels[path] || monacoModels[path].isDisposed()) {
+          const uri = monacoApi.Uri.parse(`file:///${path}`);
+          const existing = monacoApi.editor.getModel(uri);
+          if (existing) existing.dispose();
+          const model = monacoApi.editor.createModel(
+            state.files[path],
+            getMonacoLanguage(path),
+            uri
+          );
+          model.onDidChangeContent(() => {
+            if (suppressModelSync) return;
+            state.files[path] = model.getValue();
+            renderExplorer();
+            renderOpenEditors();
+            renderTabs();
+            renderSourceControl();
+            updateTabDiffButton();
+            if (state.previewVisible) updateLivePreview();
+          });
+          monacoModels[path] = model;
+        }
+        return monacoModels[path];
+      }
+
+      function disposeRemovedModels() {
+        Object.keys(monacoModels).forEach((path) => {
+          if (!Object.prototype.hasOwnProperty.call(state.files, path)) {
+            monacoModels[path].dispose();
+            delete monacoModels[path];
+            delete monacoViewStates[path];
+          }
+        });
+      }
+
+      function initMonaco() {
+        if (typeof window.require !== 'function') {
+          els.monacoLoading.innerHTML = `<span class="text-[#f14c4c]">Gagal memuat CDN Monaco Editor. Periksa koneksi internet Anda.</span>`;
+          return;
+        }
+
+        window.require(['vs/editor/editor.main'], function (monaco) {
+          monacoApi = monaco;
+          els.monacoLoading.classList.add('hidden');
+
+          // Create models for initial files
+          Object.keys(state.files).forEach((p) => ensureMonacoModel(p));
+
+          codeEditor = monaco.editor.create(els.monacoEditorContainer, {
+            model: ensureMonacoModel(state.activeTab),
+            theme: state.editorSettings.theme,
+            fontSize: state.editorSettings.fontSize,
+            fontFamily: "'JetBrains Mono', Consolas, 'Courier New', monospace",
+            fontLigatures: true,
+            minimap: { enabled: state.editorSettings.minimap },
+            wordWrap: state.editorSettings.wordWrap,
+            tabSize: 2,
+            automaticLayout: true,
+            smoothScrolling: true,
+            cursorBlinking: 'smooth',
+            cursorSmoothCaretAnimation: 'on',
+            bracketPairColorization: { enabled: true },
+            guides: { bracketPairs: true, indentation: true },
+            scrollBeyondLastLine: false,
+            padding: { top: 8 }
+          });
+
+          codeEditor.onDidChangeCursorPosition((e) => {
+            els.statusCursor.textContent = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+          });
+
+          // Create Monaco Side-by-Side Diff Editor
+          diffEditor = monaco.editor.createDiffEditor(els.monacoDiffContainer, {
+            theme: state.editorSettings.theme,
+            fontSize: state.editorSettings.fontSize,
+            fontFamily: "'JetBrains Mono', Consolas, 'Courier New', monospace",
+            automaticLayout: true,
+            renderSideBySide: true,
+            readOnly: false,
+            originalEditable: false,
+            scrollBeyondLastLine: false
+          });
+
+          renderAll();
+        });
+      }
+
+      // ==========================================
+      // 6. GIT CHANGES & MONACO DIFF VIEWER
+      // ==========================================
+      function getGitChanges() {
+        const changes = [];
+        const allPaths = new Set([...Object.keys(state.headFiles), ...Object.keys(state.files)]);
+        Array.from(allPaths)
+          .sort()
+          .forEach((path) => {
+            const inHead = Object.prototype.hasOwnProperty.call(state.headFiles, path);
+            const inWork = Object.prototype.hasOwnProperty.call(state.files, path);
+            if (!inHead && inWork) {
+              changes.push({ path, status: 'U', label: 'Untracked' });
+            } else if (inHead && !inWork) {
+              changes.push({ path, status: 'D', label: 'Deleted' });
+            } else if (state.headFiles[path] !== state.files[path]) {
+              changes.push({ path, status: 'M', label: 'Modified' });
+            }
+          });
+        return changes;
+      }
+
+      function openDiffTab(path) {
+        const diffTabId = `diff:${path}`;
+        if (!state.openTabs.includes(diffTabId)) {
+          state.openTabs.push(diffTabId);
+        }
+        activateTab(diffTabId);
+      }
+
+      // ==========================================
+      // 7. TREE BUILDER & UI RENDERERS
+      // ==========================================
+      function buildHierarchicalTree(paths) {
+        const root = { name: '', path: '', type: 'folder', children: {} };
+        paths.forEach((fullPath) => {
+          const parts = fullPath.split('/');
+          let current = root;
+          parts.forEach((part, idx) => {
+            const isFile = idx === parts.length - 1;
+            const nodePath = parts.slice(0, idx + 1).join('/');
+            if (!current.children[part]) {
+              current.children[part] = {
+                name: part,
+                path: nodePath,
+                type: isFile ? 'file' : 'folder',
+                children: {}
+              };
+            }
+            current = current.children[part];
+          });
+        });
+        return root;
+      }
+
+      function renderExplorer() {
+        const changesMap = {};
+        getGitChanges().forEach((c) => {
+          changesMap[c.path] = c.status;
+        });
+
+        const treeRoot = buildHierarchicalTree(Object.keys(state.files));
+        els.fileTree.innerHTML = '';
+
+        function renderNode(node, depth) {
+          const entries = Object.values(node.children).sort((a, b) => {
+            if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+            return a.name.localeCompare(b.name);
+          });
+
+          entries.forEach((child) => {
+            const paddingLeft = 10 + depth * 12;
+
+            if (child.type === 'folder') {
+              const isExpanded = state.expandedFolders.has(child.path);
+              const folderRow = document.createElement('div');
+              folderRow.style.paddingLeft = `${paddingLeft}px`;
+              folderRow.className = 'group h-[22px] pr-2 flex items-center justify-between gap-1 cursor-pointer hover:bg-[#2a2d2e] text-[#cccccc]';
+              folderRow.innerHTML = `
+                <div class="flex items-center gap-1 min-w-0 flex-1">
+                  <i class="codicon ${isExpanded ? 'codicon-chevron-down' : 'codicon-chevron-right'} text-[12px] text-[#858585] shrink-0"></i>
+                  <i class="codicon ${isExpanded ? 'codicon-folder-opened' : 'codicon-folder'} text-[14px] text-[#dcb67a] shrink-0"></i>
+                  <span class="truncate text-[13px]">${escapeHtml(child.name)}</span>
+                </div>
+                <button data-new-in-folder="${escapeHtml(child.path)}" title="New File in ${escapeHtml(child.name)}" class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-[#3c3c3c] text-[#cccccc]">
+                  <i class="codicon codicon-new-file text-[12px]"></i>
+                </button>
+              `;
+
+              folderRow.addEventListener('click', (e) => {
+                const newBtn = e.target.closest('[data-new-in-folder]');
+                if (newBtn) {
+                  e.stopPropagation();
+                  createNewFileDialog(`${child.path}/`);
+                  return;
+                }
+                if (state.expandedFolders.has(child.path)) {
+                  state.expandedFolders.delete(child.path);
+                } else {
+                  state.expandedFolders.add(child.path);
+                }
+                renderExplorer();
+              });
+
+              els.fileTree.appendChild(folderRow);
+              if (isExpanded) {
+                renderNode(child, depth + 1);
+              }
+            } else {
+              const isSelected = state.activeTab === child.path;
+              const status = changesMap[child.path];
+              const { icon, color } = getFileCodicon(child.name);
+              const statusColor =
+                status === 'M'
+                  ? 'text-[#e2c08d]'
+                  : status === 'U'
+                  ? 'text-[#73c991]'
+                  : '';
+
+              const fileRow = document.createElement('div');
+              fileRow.style.paddingLeft = `${paddingLeft + 14}px`;
+              fileRow.className = `group h-[22px] pr-2 flex items-center justify-between gap-1 cursor-pointer ${
+                isSelected ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-[#cccccc]'
+              }`;
+
+              fileRow.innerHTML = `
+                <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                  <i class="codicon ${icon} text-[14px] ${color} shrink-0"></i>
+                  <span class="truncate text-[13px] ${statusColor}">${escapeHtml(child.name)}</span>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  ${status ? `<span class="text-[11px] font-semibold ${statusColor}">${status}</span>` : ''}
+                  <button data-rename-file="${escapeHtml(child.path)}" title="Rename" class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-[#3c3c3c] text-[#858585] hover:text-white">
+                    <i class="codicon codicon-edit text-[11px]"></i>
+                  </button>
+                  <button data-delete-file="${escapeHtml(child.path)}" title="Delete" class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-[#3c3c3c] text-[#858585] hover:text-[#f14c4c]">
+                    <i class="codicon codicon-trash text-[11px]"></i>
+                  </button>
+                </div>
+              `;
+
+              fileRow.addEventListener('click', (e) => {
+                if (e.target.closest('[data-rename-file]')) {
+                  e.stopPropagation();
+                  renameFileDialog(child.path);
+                  return;
+                }
+                if (e.target.closest('[data-delete-file]')) {
+                  e.stopPropagation();
+                  deleteFile(child.path);
+                  return;
+                }
+                openFile(child.path);
+              });
+
+              els.fileTree.appendChild(fileRow);
+            }
+          });
+        }
+
+        renderNode(treeRoot, 0);
+      }
+
+      function renderOpenEditors() {
+        els.openEditorsChevron.className = `codicon ${
+          state.openEditorsExpanded ? 'codicon-chevron-down' : 'codicon-chevron-right'
+        } text-[12px]`;
+        els.openEditorsList.classList.toggle('hidden', !state.openEditorsExpanded);
+        els.openEditorsList.innerHTML = '';
+
+        state.openTabs.forEach((tabId) => {
+          const isDiff = tabId.startsWith('diff:');
+          const rawPath = isDiff ? tabId.slice(5) : tabId;
+          const isActive = state.activeTab === tabId;
+
+          const row = document.createElement('div');
+          row.className = `group h-[22px] px-4 flex items-center justify-between gap-1.5 text-[12px] cursor-pointer ${
+            isActive ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-[#cccccc]'
+          }`;
+
+          let label = rawPath.split('/').pop();
+          let iconHtml = `<i class="codicon codicon-file text-[13px]"></i>`;
+          if (tabId === 'welcome') {
+            label = 'Welcome';
+            iconHtml = `<i class="codicon codicon-sparkle text-[13px] text-[#3794ff]"></i>`;
+          } else if (tabId === 'settings') {
+            label = 'Settings';
+            iconHtml = `<i class="codicon codicon-settings-gear text-[13px] text-[#cccccc]"></i>`;
+          } else if (isDiff) {
+            label = `${rawPath.split('/').pop()} (Working Tree)`;
+            iconHtml = `<i class="codicon codicon-diff text-[13px] text-[#4ec9b0]"></i>`;
+          } else {
+            const { icon, color } = getFileCodicon(rawPath);
+            iconHtml = `<i class="codicon ${icon} text-[13px] ${color}"></i>`;
+          }
+
+          row.innerHTML = `
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <button data-oe-close="${escapeHtml(tabId)}" class="opacity-0 group-hover:opacity-100 hover:text-white text-[#858585]">
+                <i class="codicon codicon-close text-[11px]"></i>
+              </button>
+              ${iconHtml}
+              <span class="truncate">${escapeHtml(label)}</span>
+            </div>
+          `;
+
+          row.addEventListener('click', (e) => {
+            if (e.target.closest('[data-oe-close]')) {
+              e.stopPropagation();
+              closeTab(tabId);
+              return;
+            }
+            activateTab(tabId);
+          });
+
+          els.openEditorsList.appendChild(row);
+        });
+      }
+
+      function renderTabs() {
+        const changesMap = {};
+        getGitChanges().forEach((c) => {
+          changesMap[c.path] = c.status;
+        });
+
+        els.tabsBar.innerHTML = '';
+        state.openTabs.forEach((tabId) => {
+          const isActive = state.activeTab === tabId;
+          const isDiff = tabId.startsWith('diff:');
+          const rawPath = isDiff ? tabId.slice(5) : tabId;
+          const isDirty = !isDiff && Boolean(changesMap[rawPath]);
+
+          let title = rawPath.split('/').pop();
+          let iconHtml = '';
+          if (tabId === 'welcome') {
+            title = 'Welcome';
+            iconHtml = `<i class="codicon codicon-sparkle text-[14px] text-[#3794ff]"></i>`;
+          } else if (tabId === 'settings') {
+            title = 'Settings';
+            iconHtml = `<i class="codicon codicon-settings-gear text-[14px] text-[#cccccc]"></i>`;
+          } else if (isDiff) {
+            title = `${rawPath.split('/').pop()} (Working Tree)`;
+            iconHtml = `<i class="codicon codicon-diff text-[14px] text-[#4ec9b0]"></i>`;
+          } else {
+            const { icon, color } = getFileCodicon(rawPath);
+            iconHtml = `<i class="codicon ${icon} text-[14px] ${color}"></i>`;
+          }
+
+          const tab = document.createElement('div');
+          tab.className = `group h-full px-3 flex items-center gap-1.5 border-r border-[#252526] text-[13px] cursor-pointer shrink-0 ${
+            isActive
+              ? 'bg-[#1e1e1e] text-white border-t border-t-[#007acc]'
+              : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#2a2a2b]'
+          }`;
+
+          tab.innerHTML = `
+            ${iconHtml}
+            <span class="truncate max-w-[170px] ${isDirty ? 'text-[#e2c08d]' : ''}">${escapeHtml(title)}</span>
+            ${isDirty ? '<span class="w-2 h-2 rounded-full bg-white/80 ml-0.5" title="Modified"></span>' : ''}
+            <button data-close-tab="${escapeHtml(tabId)}" class="ml-1 p-0.5 rounded hover:bg-[#3c3c3c] text-[#858585] hover:text-white ${
+              isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }">
+              <i class="codicon codicon-close text-[12px]"></i>
+            </button>
+          `;
+
+          tab.addEventListener('click', (e) => {
+            if (e.target.closest('[data-close-tab]')) {
+              e.stopPropagation();
+              closeTab(tabId);
+              return;
+            }
+            activateTab(tabId);
+          });
+
+          els.tabsBar.appendChild(tab);
+        });
+      }
+
+      function updateTabDiffButton() {
+        const tabId = state.activeTab;
+        if (tabId && !tabId.startsWith('diff:') && tabId !== 'welcome' && tabId !== 'settings') {
+          const isModified =
+            !Object.prototype.hasOwnProperty.call(state.headFiles, tabId) ||
+            state.headFiles[tabId] !== state.files[tabId];
+          els.tabActionDiff.classList.toggle('hidden', !isModified);
+        } else {
+          els.tabActionDiff.classList.add('hidden');
+        }
+      }
+
+      function renderActiveEditorView() {
+        const tabId = state.activeTab;
+        els.welcomeView.classList.add('hidden');
+        els.settingsView.classList.add('hidden');
+        els.monacoEditorContainer.classList.add('hidden');
+        els.monacoDiffContainer.classList.add('hidden');
+
+        if (!tabId || tabId === 'welcome') {
+          els.welcomeView.classList.remove('hidden');
+          els.breadcrumbsBar.innerHTML = `<span>Visual Studio Code</span> <i class="codicon codicon-chevron-right text-[11px]"></i> <span>Welcome</span>`;
+          els.statusLang.textContent = 'Welcome';
+          updateTabDiffButton();
+          return;
+        }
+
+        if (tabId === 'settings') {
+          els.settingsView.classList.remove('hidden');
+          els.breadcrumbsBar.innerHTML = `<span>User</span> <i class="codicon codicon-chevron-right text-[11px]"></i> <span>Settings</span>`;
+          els.statusLang.textContent = 'JSON Settings';
+          updateTabDiffButton();
+          return;
+        }
+
+        if (tabId.startsWith('diff:')) {
+          const path = tabId.slice(5);
+          els.monacoDiffContainer.classList.remove('hidden');
+          els.breadcrumbsBar.innerHTML = `<span>my-web-app</span> <i class="codicon codicon-chevron-right text-[11px]"></i> <span class="text-[#4ec9b0]">${escapeHtml(path)} (HEAD ↔ Working Tree)</span>`;
+          els.statusLang.textContent = getLanguageDisplay(path);
+
+          if (monacoApi && diffEditor) {
+            const origUri = monacoApi.Uri.parse(`head:///${path}`);
+            const oldOrig = monacoApi.editor.getModel(origUri);
+            if (oldOrig) oldOrig.dispose();
+            const originalModel = monacoApi.editor.createModel(
+              state.headFiles[path] ?? '',
+              getMonacoLanguage(path),
+              origUri
+            );
+            const modifiedModel = ensureMonacoModel(path);
+            diffEditor.setModel({
+              original: originalModel,
+              modified: modifiedModel
+            });
+            diffEditor.layout();
+          }
+          updateTabDiffButton();
+          return;
+        }
+
+        // Standard File Editor
+        els.monacoEditorContainer.classList.remove('hidden');
+        const parts = ['my-web-app', ...tabId.split('/')];
+        els.breadcrumbsBar.innerHTML = parts
+          .map((p, idx) =>
+            idx === parts.length - 1
+              ? `<span class="text-[#cccccc]">${escapeHtml(p)}</span>`
+              : `<span>${escapeHtml(p)}</span><i class="codicon codicon-chevron-right text-[11px] text-[#6e6e6e]"></i>`
+          )
+          .join('');
+
+        els.statusLang.textContent = getLanguageDisplay(tabId);
+        updateTabDiffButton();
+
+        if (monacoApi && codeEditor) {
+          const model = ensureMonacoModel(tabId);
+          if (model && codeEditor.getModel() !== model) {
+            codeEditor.setModel(model);
+            if (monacoViewStates[tabId]) {
+              codeEditor.restoreViewState(monacoViewStates[tabId]);
+            }
+          }
+          codeEditor.layout();
+          codeEditor.focus();
+        }
+      }
+
+      function renderSourceControl() {
+        const changes = getGitChanges();
+        const count = changes.length;
+
+        els.headerChangesBadge.textContent = String(count);
+        els.gitChangesCount.textContent = String(count);
+
+        if (count > 0) {
+          els.activityGitBadge.textContent = String(count);
+          els.activityGitBadge.classList.remove('hidden');
+          els.statusBranchName.textContent = `${state.github.branch}*`;
+          els.statusSyncText.textContent = `${count} perubahan siap push`;
+        } else {
+          els.activityGitBadge.classList.add('hidden');
+          els.statusBranchName.textContent = state.github.branch;
+          els.statusSyncText.textContent = 'Synced';
+        }
+
+        els.gitChangesList.innerHTML = '';
+        if (count === 0) {
+          els.gitChangesList.innerHTML = `<div class="text-[#858585] py-3 px-3 text-[12px]">Working tree bersih. Tidak ada perubahan tertunda.</div>`;
+        } else {
+          changes.forEach((ch) => {
+            const colorClass =
+              ch.status === 'M'
+                ? 'text-[#e2c08d]'
+                : ch.status === 'U'
+                ? 'text-[#73c991]'
+                : 'text-[#c74e39]';
+
+            const fileName = ch.path.split('/').pop();
+            const dirName = ch.path.includes('/') ? ch.path.slice(0, ch.path.lastIndexOf('/')) : '';
+
+            const row = document.createElement('div');
+            row.className = 'group h-[22px] px-2 rounded-[2px] hover:bg-[#2a2d2e] flex items-center justify-between gap-1.5 cursor-pointer';
+            row.innerHTML = `
+              <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                <i class="codicon codicon-file text-[13px] text-[#cccccc] shrink-0"></i>
+                <span class="truncate text-[#cccccc]">${escapeHtml(fileName)}</span>
+                ${dirName ? `<span class="truncate text-[11px] text-[#858585]">${escapeHtml(dirName)}</span>` : ''}
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button data-open-diff="${escapeHtml(ch.path)}" title="Open Changes" class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-[#3c3c3c] text-[#cccccc]">
+                  <i class="codicon codicon-diff text-[12px]"></i>
+                </button>
+                <button data-discard-file="${escapeHtml(ch.path)}" title="Discard Changes" class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-[#3c3c3c] text-[#cccccc]">
+                  <i class="codicon codicon-discard text-[12px]"></i>
+                </button>
+                <span class="font-mono-vsc font-bold text-[11px] ${colorClass} w-3 text-center">${ch.status}</span>
+              </div>
+            `;
+
+            row.addEventListener('click', (e) => {
+              if (e.target.closest('[data-discard-file]')) {
+                e.stopPropagation();
+                revertSingleFile(ch.path);
+                return;
+              }
+              openDiffTab(ch.path);
+            });
+
+            els.gitChangesList.appendChild(row);
+          });
+        }
+
+        // Commit History
+        els.gitHistoryList.innerHTML = state.commits
+          .map(
+            (c) => `
+            <div class="px-2 py-1 rounded hover:bg-[#2a2d2e] flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <i class="codicon codicon-git-commit text-[12px] ${c.remote ? 'text-[#3fb950]' : 'text-[#3794ff]'} shrink-0"></i>
+                <span class="truncate text-[#cccccc]">${escapeHtml(c.message)}</span>
+              </div>
+              <span class="font-mono-vsc text-[10px] text-[#858585] shrink-0">${escapeHtml(c.sha)}</span>
+            </div>
+          `
+          )
+          .join('');
+      }
+
+      function renderConnectionStatus() {
+        const { connected, owner, repo, branch } = state.github;
+        const activeBranch = branch || 'main';
+        els.gitBranchPill.textContent = activeBranch;
+        els.statusBranchName.textContent = getGitChanges().length > 0 ? `${activeBranch}*` : activeBranch;
+
+        if (connected && owner && repo) {
+          const slug = `${owner}/${repo}`;
+          els.headerGhRepoLabel.textContent = slug;
+          els.headerGhDot.className = 'w-2 h-2 rounded-full bg-[#3fb950]';
+          els.activityGhDot.className = 'absolute bottom-2.5 right-2.5 w-2 h-2 rounded-full bg-[#3fb950] ring-2 ring-[#333333]';
+          els.gitSidebarRepo.textContent = slug;
+          els.gitSidebarStatus.textContent = `Connected • branch: ${activeBranch}`;
+          els.gitSidebarStatus.className = 'text-[10px] text-[#3fb950] truncate mt-0.5';
+          els.statusRemoteText.textContent = slug;
+          els.commandCenterLabel.textContent = `${repo} (${slug}) — Visual Studio Code`;
+          els.explorerWorkspaceTitle.textContent = repo.toUpperCase();
+        } else {
+          els.headerGhRepoLabel.textContent = 'GitHub';
+          els.headerGhDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+          els.activityGhDot.className = 'absolute bottom-2.5 right-2.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-[#333333]';
+          els.gitSidebarRepo.textContent = 'local-sandbox/my-web-app';
+          els.gitSidebarStatus.textContent = 'Sandbox Lokal • Klik Atur untuk GitHub';
+          els.gitSidebarStatus.className = 'text-[10px] text-amber-400 truncate mt-0.5';
+          els.statusRemoteText.textContent = 'GitHub';
+          els.commandCenterLabel.textContent = 'my-web-app — Visual Studio Code';
+          els.explorerWorkspaceTitle.textContent = 'MY-WEB-APP';
+        }
+      }
+
+      function renderAll() {
+        renderExplorer();
+        renderOpenEditors();
+        renderTabs();
+        renderActiveEditorView();
+        renderSourceControl();
+        renderConnectionStatus();
+        if (state.previewVisible) updateLivePreview();
+      }
+
+      // ==========================================
+      // 8. TAB & FILE OPERATIONS
+      // ==========================================
+      function activateTab(tabId) {
+        // Save current viewState before switching
+        if (
+          codeEditor &&
+          state.activeTab &&
+          !state.activeTab.startsWith('diff:') &&
+          state.activeTab !== 'welcome' &&
+          state.activeTab !== 'settings'
+        ) {
+          monacoViewStates[state.activeTab] = codeEditor.saveViewState();
+        }
+
+        if (!state.openTabs.includes(tabId)) {
+          state.openTabs.push(tabId);
+        }
+        state.activeTab = tabId;
+        renderExplorer();
+        renderOpenEditors();
+        renderTabs();
+        renderActiveEditorView();
+      }
+
+      function openFile(path) {
+        if (!Object.prototype.hasOwnProperty.call(state.files, path)) return;
+        const parts = path.split('/');
+        for (let i = 1; i < parts.length; i++) {
+          state.expandedFolders.add(parts.slice(0, i).join('/'));
+        }
+        activateTab(path);
+      }
+
+      function closeTab(tabId) {
+        const idx = state.openTabs.indexOf(tabId);
+        if (idx === -1) return;
+        state.openTabs.splice(idx, 1);
+
+        if (state.activeTab === tabId) {
+          state.activeTab = state.openTabs[idx] || state.openTabs[idx - 1] || 'welcome';
+          if (state.activeTab === 'welcome' && !state.openTabs.includes('welcome')) {
+            state.openTabs.push('welcome');
+          }
+        }
+        renderExplorer();
+        renderOpenEditors();
+        renderTabs();
+        renderActiveEditorView();
+      }
+
+      function createNewFileDialog(prefix = '') {
+        openModal({
+          title: 'New File',
+          bodyHtml: `
+            <label class="block text-[#cccccc] mb-1">Masukkan path file (contoh: <code class="text-[#ce9178]">src/utils.js</code> atau <code class="text-[#ce9178]">about.html</code>)</label>
+            <input id="new-file-input" type="text" value="${escapeHtml(prefix)}" placeholder="index.js" class="w-full h-7 px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#007acc] text-[12px] text-white outline-none font-mono-vsc" />
+          `,
+          buttons: [
+            { label: 'Batal', onClick: closeModal },
+            {
+              label: 'Buat File',
+              primary: true,
+              onClick: () => {
+                const raw = document.getElementById('new-file-input').value.trim().replace(/^\/+/, '');
+                if (!raw || raw.endsWith('/')) {
+                  showNotification('Masukkan nama file yang valid.', 'warn');
+                  return;
+                }
+                if (Object.prototype.hasOwnProperty.call(state.files, raw)) {
+                  showNotification(`File "${raw}" sudah ada.`, 'warn');
+                  return;
+                }
+                const ext = raw.split('.').pop().toLowerCase();
+                let content = '';
+                if (ext === 'html') {
+                  content = `<!DOCTYPE html>\n<html lang="id">\n<head>\n  <meta charset="UTF-8" />\n  <title>${raw}</title>\n</head>\n<body>\n  <h1>${raw}</h1>\n</body>\n</html>\n`;
+                } else if (ext === 'css') {
+                  content = `/* ${raw} */\n`;
+                } else if (ext === 'js') {
+                  content = `// ${raw}\n`;
+                }
+                state.files[raw] = content;
+                ensureMonacoModel(raw);
+                closeModal();
+                openFile(raw);
+                renderSourceControl();
+              }
+            }
+          ]
+        });
+      }
+
+      function renameFileDialog(oldPath) {
+        openModal({
+          title: `Rename ${oldPath}`,
+          bodyHtml: `
+            <label class="block text-[#cccccc] mb-1">Path file baru:</label>
+            <input id="rename-file-input" type="text" value="${escapeHtml(oldPath)}" class="w-full h-7 px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#007acc] text-[12px] text-white outline-none font-mono-vsc" />
+          `,
+          buttons: [
+            { label: 'Batal', onClick: closeModal },
+            {
+              label: 'Rename',
+              primary: true,
+              onClick: () => {
+                const newPath = document.getElementById('rename-file-input').value.trim().replace(/^\/+/, '');
+                if (!newPath || newPath === oldPath) {
+                  closeModal();
+                  return;
+                }
+                if (Object.prototype.hasOwnProperty.call(state.files, newPath)) {
+                  showNotification(`File "${newPath}" sudah ada.`, 'warn');
+                  return;
+                }
+                state.files[newPath] = state.files[oldPath];
+                delete state.files[oldPath];
+                disposeRemovedModels();
+                ensureMonacoModel(newPath);
+
+                state.openTabs = state.openTabs.map((t) => (t === oldPath ? newPath : t));
+                if (state.activeTab === oldPath) state.activeTab = newPath;
+
+                closeModal();
+                renderAll();
+              }
+            }
+          ]
+        });
+      }
+
+      function deleteFile(path) {
+        openModal({
+          title: 'Delete File',
+          bodyHtml: `<p>Hapus <strong class="text-white">${escapeHtml(path)}</strong> dari workspace?</p>`,
+          buttons: [
+            { label: 'Batal', onClick: closeModal },
+            {
+              label: 'Delete',
+              primary: true,
+              onClick: () => {
+                delete state.files[path];
+                disposeRemovedModels();
+                state.openTabs = state.openTabs.filter((t) => t !== path && t !== `diff:${path}`);
+                if (state.activeTab === path || state.activeTab === `diff:${path}`) {
+                  state.activeTab = state.openTabs[0] || 'welcome';
+                  if (state.activeTab === 'welcome' && !state.openTabs.includes('welcome')) {
+                    state.openTabs.push('welcome');
+                  }
+                }
+                closeModal();
+                renderAll();
+              }
+            }
+          ]
+        });
+      }
+
+      function revertSingleFile(path) {
+        if (Object.prototype.hasOwnProperty.call(state.headFiles, path)) {
+          state.files[path] = state.headFiles[path];
+          if (monacoModels[path]) {
+            suppressModelSync = true;
+            monacoModels[path].setValue(state.headFiles[path]);
+            suppressModelSync = false;
+          }
+        } else {
+          delete state.files[path];
+          disposeRemovedModels();
+        }
+        state.openTabs = state.openTabs.filter((t) => t !== `diff:${path}`);
+        if (state.activeTab === `diff:${path}`) {
+          state.activeTab = Object.prototype.hasOwnProperty.call(state.files, path) ? path : 'welcome';
+        }
+        renderAll();
+        showNotification(`Perubahan pada ${path} dibatalkan.`, 'info');
+      }
+
+      function discardAllChanges() {
+        const changes = getGitChanges();
+        if (changes.length === 0) {
+          showNotification('Tidak ada perubahan untuk dibatalkan.', 'info');
+          return;
+        }
+        openModal({
+          title: 'Discard All Changes',
+          bodyHtml: `<p>Batalkan semua perubahan pada <strong class="text-white">${changes.length} file</strong> dan kembalikan ke versi HEAD?</p>`,
+          buttons: [
+            { label: 'Batal', onClick: closeModal },
+            {
+              label: 'Discard All',
+              primary: true,
+              onClick: () => {
+                state.files = { ...state.headFiles };
+                disposeRemovedModels();
+                suppressModelSync = true;
+                Object.keys(state.files).forEach((p) => {
+                  const m = ensureMonacoModel(p);
+                  if (m) m.setValue(state.files[p]);
+                });
+                suppressModelSync = false;
+
+                state.openTabs = state.openTabs.filter(
+                  (t) => !t.startsWith('diff:') && (t === 'welcome' || t === 'settings' || Object.prototype.hasOwnProperty.call(state.files, t))
+                );
+                if (!state.openTabs.includes(state.activeTab)) {
+                  state.activeTab = state.openTabs[0] || 'welcome';
+                }
+                closeModal();
+                renderAll();
+                showNotification('Semua perubahan berhasil dibatalkan.', 'info');
+              }
+            }
+          ]
+        });
+      }
+
+      // ==========================================
+      // 9. LIVE PREVIEW BUNDLER
+      // ==========================================
+      function updateLivePreview() {
+        const entryHtml =
+          state.files['index.html'] ||
+          Object.entries(state.files).find(([k]) => k.endsWith('.html'))?.[1] ||
+          '<body style="font-family:sans-serif;padding:2rem;color:#334155"><h3>Tidak ada file index.html</h3></body>';
+
+        let bundled = entryHtml;
+
+        bundled = bundled.replace(/<link\b[^>]*>/gi, (match) => {
+          if (!/rel=["']stylesheet["']/i.test(match) && !/\.css["']/i.test(match)) return match;
+          const hrefMatch = match.match(/href=["']([^"']+)["']/i);
+          if (!hrefMatch) return match;
+          const clean = hrefMatch[1].replace(/^\.\//, '');
+          if (Object.prototype.hasOwnProperty.call(state.files, clean)) {
+            return `<style>\n${state.files[clean]}\n</style>`;
+          }
+          return match;
+        });
+
+        bundled = bundled.replace(/<script[^>]+src=["']([^"']+)["'][^>]*><\/script>/gi, (match, src) => {
+          const clean = src.replace(/^\.\//, '');
+          if (Object.prototype.hasOwnProperty.call(state.files, clean)) {
+            const safeJs = state.files[clean].replace(/<\/script>/gi, '<\\/script>');
+            return `<script>\n${safeJs}\n<\/script>`;
+          }
+          return match;
+        });
+
+        els.previewIframe.srcdoc = bundled;
+      }
+
+      function togglePreview(forceState) {
+        state.previewVisible = typeof forceState === 'boolean' ? forceState : !state.previewVisible;
+        els.previewPane.classList.toggle('hidden', !state.previewVisible);
+        if (state.previewVisible) updateLivePreview();
+        if (codeEditor) setTimeout(() => codeEditor.layout(), 20);
+        if (diffEditor) setTimeout(() => diffEditor.layout(), 20);
+      }
+
+      // ==========================================
+      // 10. GITHUB REST API + COMMIT & PUSH
+      // ==========================================
+      async function ghFetch(url, options = {}) {
+        const token = state.github.token.trim();
+        const headers = {
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          ...(options.headers || {})
+        };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        if (options.body) headers['Content-Type'] = 'application/json';
+
+        const res = await fetch(url, { ...options, headers });
+        const text = await res.text();
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (_) {
+          data = { message: text };
+        }
+
+        if (!res.ok) {
+          throw new Error(`GitHub (${res.status}): ${data.message || res.statusText}`);
+        }
+        return data;
+      }
+
+      function openGitHubModal() {
+        openModal({
+          title: 'GitHub Repository & Deployment Connection',
+          bodyHtml: `
+            <p class="text-[#969696] leading-relaxed">
+              Hubungkan ke GitHub menggunakan <strong>Personal Access Token (PAT)</strong> (izin <code class="text-[#ce9178]">repo</code> / <code class="text-[#ce9178]">Contents: Read &amp; Write</code>). Jika repository belum ada, Anda juga bisa membuatnya langsung dari sini.
+            </p>
+            <div>
+              <label class="block text-[#cccccc] font-medium mb-1">Personal Access Token (PAT)</label>
+              <input id="gh-token" type="password" value="${escapeHtml(state.github.token)}" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full h-7 px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#454545] focus:border-[#007acc] text-[12px] text-white outline-none font-mono-vsc" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[#cccccc] font-medium mb-1">Owner / Username</label>
+                <input id="gh-owner" type="text" value="${escapeHtml(state.github.owner)}" placeholder="username" class="w-full h-7 px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#454545] focus:border-[#007acc] text-[12px] text-white outline-none" />
+              </div>
+              <div>
+                <label class="block text-[#cccccc] font-medium mb-1">Repository Name</label>
+                <input id="gh-repo" type="text" value="${escapeHtml(state.github.repo)}" placeholder="my-web-app" class="w-full h-7 px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#454545] focus:border-[#007acc] text-[12px] text-white outline-none" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[#cccccc] font-medium mb-1">Branch (misal: main atau gh-pages)</label>
+              <input id="gh-branch" type="text" value="${escapeHtml(state.github.branch || 'main')}" placeholder="main" class="w-full h-7 px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#454545] focus:border-[#007acc] text-[12px] text-white outline-none font-mono-vsc" />
+            </div>
+          `,
+          buttons: [
+            {
+              label: 'Sandbox Lokal',
+              onClick: () => {
+                state.github.connected = false;
+                state.github.branch = document.getElementById('gh-branch').value.trim() || 'main';
+                closeModal();
+                renderConnectionStatus();
+                logGit('Menggunakan Mode Sandbox Lokal.', 'warn');
+              }
+            },
+            {
+              label: 'Buat Repo Baru & Hubungkan',
+              primary: true,
+              onClick: async () => {
+                const token = document.getElementById('gh-token').value.trim();
+                const owner = document.getElementById('gh-owner').value.trim();
+                const repo = document.getElementById('gh-repo').value.trim();
+                const branch = document.getElementById('gh-branch').value.trim() || 'main';
+                if (!token || !owner || !repo) {
+                  showNotification('Isi Token, Owner, dan Nama Repository.', 'warn');
+                  return;
+                }
+                state.github = { token, owner, repo, branch, connected: true };
+                closeModal();
+                renderConnectionStatus();
+                logGit(`Membuat repository baru github.com/${owner}/${repo}...`, 'cmd');
+                try {
+                  const created = await ghFetch('https://api.github.com/user/repos', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      name: repo,
+                      description: 'Created from VS Code Web IDE',
+                      private: false,
+                      auto_init: false
+                    })
+                  });
+                  state.github.owner = created.owner?.login || owner;
+                  renderConnectionStatus();
+                  logGit(`Repository ${created.full_name} berhasil dibuat! Siap Commit & Push.`, 'success');
+                  showNotification(`Repo ${created.full_name} dibuat! Klik Commit & Push sekarang.`, 'success');
+                } catch (err) {
+                  state.github.connected = false;
+                  renderConnectionStatus();
+                  logGit(`Gagal membuat repo: ${err.message}`, 'error');
+                  showNotification(err.message, 'error');
+                }
+              }
+            },
+            {
+              label: 'Hubungkan Repo',
+              success: true,
+              onClick: async () => {
+                const token = document.getElementById('gh-token').value.trim();
+                const owner = document.getElementById('gh-owner').value.trim();
+                const repo = document.getElementById('gh-repo').value.trim();
+                const branch = document.getElementById('gh-branch').value.trim() || 'main';
+                if (!token || !owner || !repo) {
+                  showNotification('Isi Token, Owner, dan Nama Repository.', 'warn');
+                  return;
+                }
+                state.github = { token, owner, repo, branch, connected: true };
+                closeModal();
+                renderConnectionStatus();
+                logGit(`Memeriksa koneksi ke github.com/${owner}/${repo}...`, 'cmd');
+                try {
+                  const info = await ghFetch(`https://api.github.com/repos/${owner}/${repo}`);
+                  logGit(`Terhubung ke ${info.full_name} (default branch: ${info.default_branch}).`, 'success');
+                  showNotification(`Terhubung ke ${info.full_name}`, 'success');
+                } catch (err) {
+                  state.github.connected = false;
+                  renderConnectionStatus();
+                  logGit(`Koneksi gagal: ${err.message}`, 'error');
+                  showNotification(err.message, 'error');
+                }
+              }
+            }
+          ]
+        });
+      }
+
+      async function pullFromGitHub() {
+        if (!state.github.connected) {
+          showNotification('Hubungkan repository GitHub terlebih dahulu.', 'warn');
+          openGitHubModal();
+          return;
+        }
+        const { owner, repo, branch } = state.github;
+        logGit(`git pull origin ${branch}`, 'cmd');
+        try {
+          const ref = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${encodeURIComponent(branch)}`);
+          const commit = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/commits/${ref.object.sha}`);
+          const tree = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${commit.tree.sha}?recursive=1`);
+
+          const pulled = {};
+          const blobs = (tree.tree || []).filter((n) => n.type === 'blob');
+          for (const b of blobs) {
+            const detail = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs/${b.sha}`);
+            pulled[b.path] = base64ToUtf8(detail.content || '');
+          }
+
+          if (Object.keys(pulled).length > 0) {
+            state.files = { ...pulled };
+            state.headFiles = { ...pulled };
+            disposeRemovedModels();
+            suppressModelSync = true;
+            Object.keys(state.files).forEach((p) => {
+              const m = ensureMonacoModel(p);
+              if (m) m.setValue(state.files[p]);
+            });
+            suppressModelSync = false;
+
+            state.openTabs = Object.keys(pulled).slice(0, 4);
+            state.activeTab = state.openTabs[0] || 'welcome';
+          }
+
+          state.commits.unshift({
+            sha: ref.object.sha.slice(0, 7),
+            message: commit.message.split('\n')[0],
+            author: commit.author?.name || owner,
+            date: 'Pulled',
+            remote: true
+          });
+
+          renderAll();
+          logGit(`Pull selesai (${blobs.length} file dimuat).`, 'success');
+          showNotification(`Pull dari ${owner}/${repo}@${branch} berhasil!`, 'success');
+        } catch (err) {
+          logGit(`Pull gagal: ${err.message}`, 'error');
+          showNotification(err.message, 'error');
+        }
+      }
+
+      async function commitAndPush({ pushToRemote = true, customMessage = null } = {}) {
+        if (state.isPushing) return;
+        const changes = getGitChanges();
+        if (changes.length === 0) {
+          showNotification('Tidak ada perubahan baru untuk di-commit.', 'info');
+          return;
+        }
+
+        let message = (customMessage !== null ? customMessage : els.gitCommitMessage.value).trim();
+        if (!message && customMessage === null) {
+          const suggested =
+            changes.length === 1
+              ? `update: ${changes[0].path}`
+              : `update: modify ${changes.length} files`;
+
+          openModal({
+            title: pushToRemote ? 'Commit & Push to GitHub' : 'Commit Changes',
+            bodyHtml: `
+              <div class="text-[#969696]">
+                Target: <strong class="text-white">${
+                  state.github.connected
+                    ? `${escapeHtml(state.github.owner)}/${escapeHtml(state.github.repo)}`
+                    : 'Local Sandbox'
+                }</strong> (branch <code class="text-[#4ec9b0]">${escapeHtml(state.github.branch)}</code>)
+              </div>
+              <div class="max-h-24 overflow-y-auto p-2 rounded bg-[#1e1e1e] border border-[#333333] font-mono-vsc text-[11px] space-y-0.5">
+                ${changes
+                  .map(
+                    (c) =>
+                      `<div><span class="${
+                        c.status === 'M' ? 'text-[#e2c08d]' : c.status === 'U' ? 'text-[#73c991]' : 'text-[#c74e39]'
+                      } font-bold mr-1.5">${c.status}</span>${escapeHtml(c.path)}</div>`
+                  )
+                  .join('')}
+              </div>
+              <div>
+                <label class="block text-[#cccccc] font-medium mb-1">Commit Message</label>
+                <input id="quick-commit-msg" type="text" value="${escapeHtml(suggested)}" class="w-full h-7 px-2.5 rounded-[2px] bg-[#3c3c3c] border border-[#007acc] text-[12px] text-white outline-none" />
+              </div>
+            `,
+            buttons: [
+              { label: 'Batal', onClick: closeModal },
+              {
+                label: pushToRemote ? 'Commit & Push' : 'Commit',
+                success: true,
+                onClick: () => {
+                  const val = document.getElementById('quick-commit-msg').value.trim() || suggested;
+                  closeModal();
+                  commitAndPush({ pushToRemote, customMessage: val });
+                }
+              }
+            ]
+          });
+          return;
+        }
+
+        state.isPushing = true;
+        els.headerCommitLabel.textContent = pushToRemote ? 'Pushing...' : 'Committing...';
+        els.headerCommitPushBtn.disabled = true;
+        els.sidebarCommitPushBtn.disabled = true;
+
+        toggleBottomPanel(true);
+        switchBottomTab('git-output');
+        logGit(`git add . (${changes.length} file)`, 'cmd');
+        logGit(`git commit -m "${message}"`, 'cmd');
+
+        try {
+          if (pushToRemote && state.github.connected) {
+            const { owner, repo, branch } = state.github;
+            const targetBranch = branch || 'main';
+            logGit(`git push origin ${targetBranch}`, 'cmd');
+
+            let latestCommitSha = null;
+            let baseTreeSha = null;
+            let remaining = [...changes];
+            let isNewBranch = false;
+
+            try {
+              const ref = await ghFetch(
+                `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${encodeURIComponent(targetBranch)}`
+              );
+              latestCommitSha = ref.object.sha;
+              const baseCommit = await ghFetch(
+                `https://api.github.com/repos/${owner}/${repo}/git/commits/${latestCommitSha}`
+              );
+              baseTreeSha = baseCommit.tree.sha;
+            } catch (refErr) {
+              if (!/404|409|empty|Not Found/i.test(refErr.message)) throw refErr;
+
+              let branchedFromDefault = false;
+              try {
+                const repoMeta = await ghFetch(`https://api.github.com/repos/${owner}/${repo}`);
+                const defBranch = repoMeta.default_branch;
+                if (defBranch && defBranch !== targetBranch) {
+                  const defRef = await ghFetch(
+                    `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${encodeURIComponent(defBranch)}`
+                  );
+                  latestCommitSha = defRef.object.sha;
+                  const baseCommit = await ghFetch(
+                    `https://api.github.com/repos/${owner}/${repo}/git/commits/${latestCommitSha}`
+                  );
+                  baseTreeSha = baseCommit.tree.sha;
+                  branchedFromDefault = true;
+                  isNewBranch = true;
+                  logGit(`Membuat branch baru '${targetBranch}' dari '${defBranch}'...`, 'info');
+                }
+              } catch (_) {}
+
+              if (!branchedFromDefault) {
+                const firstFile = remaining.find((c) => c.status !== 'D');
+                if (!firstFile) throw refErr;
+                logGit(`Inisialisasi repositori kosong pada branch '${targetBranch}'...`, 'warn');
+                const initPut = await ghFetch(
+                  `https://api.github.com/repos/${owner}/${repo}/contents/${firstFile.path
+                    .split('/')
+                    .map(encodeURIComponent)
+                    .join('/')}`,
+                  {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                      message: remaining.length === 1 ? message : `chore: initialize ${firstFile.path}`,
+                      content: utf8ToBase64(state.files[firstFile.path]),
+                      branch: targetBranch
+                    })
+                  }
+                );
+                latestCommitSha = initPut.commit.sha;
+                baseTreeSha = initPut.commit.tree.sha;
+                remaining = remaining.filter((c) => c.path !== firstFile.path);
+              }
+            }
+
+            let finalSha = latestCommitSha;
+
+            if (remaining.length > 0) {
+              const treeItems = [];
+              for (const ch of remaining) {
+                if (ch.status === 'D') {
+                  treeItems.push({ path: ch.path, mode: '100644', type: 'blob', sha: null });
+                } else {
+                  const blob = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      content: utf8ToBase64(state.files[ch.path]),
+                      encoding: 'base64'
+                    })
+                  });
+                  treeItems.push({ path: ch.path, mode: '100644', type: 'blob', sha: blob.sha });
+                }
+              }
+
+              const newTree = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
+                method: 'POST',
+                body: JSON.stringify({ base_tree: baseTreeSha, tree: treeItems })
+              });
+
+              const newCommit = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
+                method: 'POST',
+                body: JSON.stringify({
+                  message,
+                  tree: newTree.sha,
+                  parents: [latestCommitSha]
+                })
+              });
+
+              if (isNewBranch) {
+                await ghFetch(`https://api.github.com/repos/${owner}/${repo}/git/refs`, {
+                  method: 'POST',
+                  body: JSON.stringify({ ref: `refs/heads/${targetBranch}`, sha: newCommit.sha })
+                });
+              } else {
+                await ghFetch(
+                  `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${encodeURIComponent(targetBranch)}`,
+                  {
+                    method: 'PATCH',
+                    body: JSON.stringify({ sha: newCommit.sha, force: false })
+                  }
+                );
+              }
+              finalSha = newCommit.sha;
+            }
+
+            const shortSha = finalSha.slice(0, 7);
+            state.headFiles = { ...state.files };
+            state.commits.unshift({
+              sha: shortSha,
+              message,
+              author: owner,
+              date: 'Baru saja',
+              remote: true
+            });
+            els.gitCommitMessage.value = '';
+
+            // Close any open diff tabs since changes are now synced
+            state.openTabs = state.openTabs.filter((t) => !t.startsWith('diff:'));
+            if (state.activeTab && state.activeTab.startsWith('diff:')) {
+              state.activeTab = state.activeTab.slice(5);
+            }
+
+            logGit(`To https://github.com/${owner}/${repo}.git -> ${shortSha} (${targetBranch})`, 'success');
+            showNotification(`Commit & Push berhasil ke ${owner}/${repo}@${targetBranch} (${shortSha})!`, 'success');
+          } else {
+            await new Promise((r) => setTimeout(r, 280));
+            const fakeSha = Math.random().toString(16).slice(2, 9);
+            state.headFiles = { ...state.files };
+            state.commits.unshift({
+              sha: fakeSha,
+              message,
+              author: 'developer',
+              date: 'Baru saja',
+              remote: pushToRemote
+            });
+            els.gitCommitMessage.value = '';
+            state.openTabs = state.openTabs.filter((t) => !t.startsWith('diff:'));
+            if (state.activeTab && state.activeTab.startsWith('diff:')) {
+              state.activeTab = state.activeTab.slice(5);
+            }
+
+            if (pushToRemote) {
+              logGit(`[Sandbox] Pushed commit ${fakeSha} -> origin/${state.github.branch}.`, 'success');
+              showNotification(`Commit & Push (${fakeSha}) tersimpan di Sandbox. Hubungkan token GitHub untuk push asli.`, 'success');
+            } else {
+              logGit(`[Local] Commit ${fakeSha}: ${message}`, 'success');
+              showNotification(`Commit lokal (${fakeSha}) berhasil.`, 'success');
+            }
+          }
+        } catch (err) {
+          logGit(`Error: ${err.message}`, 'error');
+          showNotification(err.message, 'error');
+        } finally {
+          state.isPushing = false;
+          els.headerCommitLabel.textContent = 'Commit & Push';
+          els.headerCommitPushBtn.disabled = false;
+          els.sidebarCommitPushBtn.disabled = false;
+          renderAll();
+        }
+      }
+
+      // ==========================================
+      // 11. COMMAND PALETTE, MENUS, SEARCH & TERMINAL
+      // ==========================================
+      let paletteItems = [];
+      let paletteSelectedIdx = 0;
+
+      function openCommandPalette(initialPrefix = '') {
+        els.paletteBackdrop.classList.remove('hidden');
+        els.paletteInput.value = initialPrefix;
+        renderPaletteList(initialPrefix);
+        setTimeout(() => els.paletteInput.focus(), 20);
+      }
+
+      function closeCommandPalette() {
+        els.paletteBackdrop.classList.add('hidden');
+      }
+
+      function getAllCommands() {
+        return [
+          {
+            id: 'git.commitPush',
+            label: 'Git: Commit & Push to GitHub',
+            shortcut: 'Ctrl+Alt+P',
+            icon: 'codicon-repo-push',
+            action: () => commitAndPush({ pushToRemote: true })
+          },
+          {
+            id: 'git.commit',
+            label: 'Git: Commit Changes Locally',
+            shortcut: '',
+            icon: 'codicon-git-commit',
+            action: () => commitAndPush({ pushToRemote: false })
+          },
+          {
+            id: 'git.pull',
+            label: 'Git: Pull from GitHub',
+            shortcut: '',
+            icon: 'codicon-repo-pull',
+            action: pullFromGitHub
+          },
+          {
+            id: 'git.connect',
+            label: 'GitHub: Connect / Create Repository',
+            shortcut: '',
+            icon: 'codicon-github',
+            action: openGitHubModal
+          },
+          {
+            id: 'git.discardAll',
+            label: 'Git: Discard All Changes',
+            shortcut: '',
+            icon: 'codicon-discard',
+            action: discardAllChanges
+          },
+          {
+            id: 'file.new',
+            label: 'File: New File',
+            shortcut: 'Ctrl+N',
+            icon: 'codicon-new-file',
+            action: () => createNewFileDialog('')
+          },
+          {
+            id: 'view.preview',
+            label: 'View: Toggle Live Web Preview',
+            shortcut: '',
+            icon: 'codicon-open-preview',
+            action: () => togglePreview()
+          },
+          {
+            id: 'view.sidebar',
+            label: 'View: Toggle Primary Side Bar',
+            shortcut: 'Ctrl+B',
+            icon: 'codicon-layout-sidebar-left',
+            action: () => toggleSidebar()
+          },
+          {
+            id: 'view.terminal',
+            label: 'View: Toggle Terminal',
+            shortcut: 'Ctrl+`',
+            icon: 'codicon-terminal',
+            action: () => {
+              toggleBottomPanel(true);
+              switchBottomTab('terminal');
+            }
+          },
+          {
+            id: 'prefs.settings',
+            label: 'Preferences: Open User Settings',
+            shortcut: 'Ctrl+,',
+            icon: 'codicon-settings-gear',
+            action: () => activateTab('settings')
+          },
+          {
+            id: 'help.welcome',
+            label: 'Help: Welcome / Get Started',
+            shortcut: '',
+            icon: 'codicon-sparkle',
+            action: () => activateTab('welcome')
+          }
+        ];
+      }
+
+      function renderPaletteList(rawQuery) {
+        const isCommandMode = rawQuery.startsWith('>');
+        const q = (isCommandMode ? rawQuery.slice(1) : rawQuery).trim().toLowerCase();
+
+        if (isCommandMode) {
+          paletteItems = getAllCommands()
+            .filter((c) => c.label.toLowerCase().includes(q))
+            .map((c) => ({
+              type: 'command',
+              title: c.label,
+              subtitle: '',
+              shortcut: c.shortcut,
+              icon: c.icon,
+              run: c.action
+            }));
+        } else {
+          const files = Object.keys(state.files)
+            .filter((p) => p.toLowerCase().includes(q))
+            .sort()
+            .map((p) => {
+              const { icon, color } = getFileCodicon(p);
+              return {
+                type: 'file',
+                title: p.split('/').pop(),
+                subtitle: p,
+                shortcut: '',
+                icon: `${icon} ${color}`,
+                run: () => openFile(p)
+              };
+            });
+
+          const cmds = q
+            ? getAllCommands()
+                .filter((c) => c.label.toLowerCase().includes(q))
+                .map((c) => ({
+                  type: 'command',
+                  title: c.label,
+                  subtitle: 'Command',
+                  shortcut: c.shortcut,
+                  icon: c.icon,
+                  run: c.action
+                }))
+            : [];
+
+          paletteItems = [...files, ...cmds];
+        }
+
+        paletteSelectedIdx = 0;
+        els.paletteList.innerHTML = '';
+
+        if (paletteItems.length === 0) {
+          els.paletteList.innerHTML = `<div class="px-3 py-2 text-[12px] text-[#858585]">No matching results</div>`;
+          return;
+        }
+
+        paletteItems.forEach((item, idx) => {
+          const row = document.createElement('div');
+          row.className = `px-3 py-1.5 flex items-center justify-between gap-2 cursor-pointer ${
+            idx === paletteSelectedIdx ? 'bg-[#04395e] text-white' : 'hover:bg-[#2a2d2e] text-[#cccccc]'
+          }`;
+          row.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+              <i class="codicon ${item.icon} text-[14px] shrink-0"></i>
+              <span class="truncate font-medium">${escapeHtml(item.title)}</span>
+              ${item.subtitle ? `<span class="truncate text-[11px] text-[#858585]">${escapeHtml(item.subtitle)}</span>` : ''}
+            </div>
+            ${
+              item.shortcut
+                ? `<kbd class="px-1.5 py-0.5 rounded bg-[#2d2d2d] border border-[#3c3c3c] text-[10px] text-[#cccccc] shrink-0">${escapeHtml(item.shortcut)}</kbd>`
+                : ''
+            }
+          `;
+          row.onclick = () => {
+            closeCommandPalette();
+            item.run();
+          };
+          els.paletteList.appendChild(row);
+        });
+      }
+
+      // Top Menu Bar Dropdowns
+      const MENU_DEFINITIONS = {
+        file: [
+          { label: 'New Text File', shortcut: 'Ctrl+N', action: () => createNewFileDialog('') },
+          { label: 'Save All', shortcut: 'Ctrl+S', action: () => showNotification('Semua perubahan tersimpan di memori workspace.', 'info') },
+          { sep: true },
+          { label: 'Preferences: Settings', shortcut: 'Ctrl+,', action: () => activateTab('settings') },
+          { label: 'Close Editor', shortcut: 'Ctrl+W', action: () => state.activeTab && closeTab(state.activeTab) }
+        ],
+        edit: [
+          { label: 'Undo', shortcut: 'Ctrl+Z', action: () => codeEditor && codeEditor.trigger('menu', 'undo', null) },
+          { label: 'Redo', shortcut: 'Ctrl+Y', action: () => codeEditor && codeEditor.trigger('menu', 'redo', null) },
+          { sep: true },
+          { label: 'Find', shortcut: 'Ctrl+F', action: () => codeEditor && codeEditor.getAction('actions.find')?.run() },
+          { label: 'Replace', shortcut: 'Ctrl+H', action: () => codeEditor && codeEditor.getAction('editor.action.startFindReplaceAction')?.run() }
+        ],
+        view: [
+          { label: 'Command Palette...', shortcut: 'Ctrl+Shift+P', action: () => openCommandPalette('>') },
+          { sep: true },
+          { label: 'Explorer', shortcut: 'Ctrl+Shift+E', action: () => switchActivity('explorer') },
+          { label: 'Search', shortcut: 'Ctrl+Shift+F', action: () => switchActivity('search') },
+          { label: 'Source Control (Git)', shortcut: 'Ctrl+Shift+G', action: () => switchActivity('git') },
+          { sep: true },
+          { label: 'Toggle Primary Side Bar', shortcut: 'Ctrl+B', action: () => toggleSidebar() },
+          { label: 'Toggle Panel', shortcut: 'Ctrl+`', action: () => toggleBottomPanel() },
+          { label: 'Toggle Live Web Preview', shortcut: '', action: () => togglePreview() }
+        ],
+        go: [
+          { label: 'Go to File...', shortcut: 'Ctrl+P', action: () => openCommandPalette('') },
+          { label: 'Go to Line/Column...', shortcut: 'Ctrl+G', action: () => codeEditor && codeEditor.getAction('editor.action.gotoLine')?.run() }
+        ],
+        git: [
+          { label: 'Commit & Push to GitHub', shortcut: 'Ctrl+Alt+P', action: () => commitAndPush({ pushToRemote: true }) },
+          { label: 'Commit Locally', shortcut: '', action: () => commitAndPush({ pushToRemote: false }) },
+          { label: 'Pull from GitHub', shortcut: '', action: pullFromGitHub },
+          { sep: true },
+          { label: 'Connect GitHub Repository...', shortcut: '', action: openGitHubModal },
+          { label: 'Discard All Changes', shortcut: '', action: discardAllChanges }
+        ],
+        terminal: [
+          {
+            label: 'New Terminal',
+            shortcut: 'Ctrl+`',
+            action: () => {
+              toggleBottomPanel(true);
+              switchBottomTab('terminal');
+            }
+          },
+          {
+            label: 'Show Git Output',
+            shortcut: '',
+            action: () => {
+              toggleBottomPanel(true);
+              switchBottomTab('git-output');
+            }
+          }
+        ],
+        help: [
+          { label: 'Welcome', shortcut: '', action: () => activateTab('welcome') },
+          { label: 'Show All Commands', shortcut: 'Ctrl+Shift+P', action: () => openCommandPalette('>') }
+        ]
+      };
+
+      function showMenuDropdown(menuKey, triggerEl) {
+        const items = MENU_DEFINITIONS[menuKey];
+        if (!items) return;
+        const rect = triggerEl.getBoundingClientRect();
+        els.menuDropdown.style.left = `${rect.left}px`;
+        els.menuDropdown.style.top = `${rect.bottom + 2}px`;
+        els.menuDropdown.innerHTML = '';
+
+        items.forEach((item) => {
+          if (item.sep) {
+            const hr = document.createElement('div');
+            hr.className = 'my-1 border-t border-[#454545]';
+            els.menuDropdown.appendChild(hr);
+            return;
+          }
+          const btn = document.createElement('button');
+          btn.className = 'w-full px-3 py-1.5 hover:bg-[#04395e] hover:text-white flex items-center justify-between gap-6 text-left';
+          btn.innerHTML = `
+            <span>${escapeHtml(item.label)}</span>
+            ${item.shortcut ? `<span class="text-[11px] text-[#858585]">${escapeHtml(item.shortcut)}</span>` : ''}
+          `;
+          btn.onclick = () => {
+            els.menuDropdown.classList.add('hidden');
+            item.action();
+          };
+          els.menuDropdown.appendChild(btn);
+        });
+
+        els.menuDropdown.classList.remove('hidden');
+      }
+
+      // Sidebar & Bottom Panel Navigation
+      function switchActivity(activity) {
+        if (state.activeActivity === activity && state.sidebarVisible) {
+          toggleSidebar(false);
+          return;
+        }
+        state.activeActivity = activity;
+        toggleSidebar(true);
+
+        document.querySelectorAll('.activity-btn').forEach((btn) => {
+          const active = btn.dataset.activity === activity;
+          btn.classList.toggle('text-white', active);
+          btn.classList.toggle('border-[#007acc]', active);
+          btn.classList.toggle('text-[#858585]', !active);
+          btn.classList.toggle('border-transparent', !active);
+        });
+
+        ['explorer', 'search', 'git', 'extensions'].forEach((v) => {
+          document.getElementById(`view-${v}`).classList.toggle('hidden', v !== activity);
+        });
+      }
+
+      function toggleSidebar(forceState) {
+        state.sidebarVisible = typeof forceState === 'boolean' ? forceState : !state.sidebarVisible;
+        els.primarySidebar.classList.toggle('hidden', !state.sidebarVisible);
+        els.sidebarResizer.classList.toggle('hidden', !state.sidebarVisible);
+        if (codeEditor) setTimeout(() => codeEditor.layout(), 20);
+        if (diffEditor) setTimeout(() => diffEditor.layout(), 20);
+      }
+
+      function switchBottomTab(tab) {
+        state.activeBottomTab = tab;
+        document.querySelectorAll('.bottom-tab-btn').forEach((btn) => {
+          const active = btn.dataset.bottomTab === tab;
+          btn.classList.toggle('border-[#e7e7e7]', active);
+          btn.classList.toggle('text-white', active);
+          btn.classList.toggle('border-transparent', !active);
+          btn.classList.toggle('text-[#858585]', !active);
+        });
+        els.panelGitOutput.classList.toggle('hidden', tab !== 'git-output');
+        els.panelTerminal.classList.toggle('hidden', tab !== 'terminal');
+        els.panelProblems.classList.toggle('hidden', tab !== 'problems');
+        if (tab === 'terminal') setTimeout(() => els.terminalInput.focus(), 20);
+      }
+
+      function toggleBottomPanel(forceState) {
+        state.bottomVisible = typeof forceState === 'boolean' ? forceState : !state.bottomVisible;
+        els.bottomPanel.classList.toggle('hidden', !state.bottomVisible);
+        els.bottomResizer.classList.toggle('hidden', !state.bottomVisible);
+        if (codeEditor) setTimeout(() => codeEditor.layout(), 20);
+        if (diffEditor) setTimeout(() => diffEditor.layout(), 20);
+      }
+
+      // Global Search
+      function runGlobalSearch(query) {
+        const resultsEl = document.getElementById('search-results');
+        const summaryEl = document.getElementById('search-summary');
+        const q = query.trim().toLowerCase();
+        if (!q) {
+          summaryEl.textContent = '';
+          resultsEl.innerHTML = '';
+          return;
+        }
+
+        const matches = [];
+        Object.entries(state.files).forEach(([path, content]) => {
+          content.split('\n').forEach((line, idx) => {
+            if (line.toLowerCase().includes(q)) {
+              matches.push({ path, line: idx + 1, text: line.trim() });
+            }
+          });
+        });
+
+        summaryEl.textContent = `${matches.length} results found`;
+        resultsEl.innerHTML = '';
+        matches.slice(0, 80).forEach((m) => {
+          const row = document.createElement('div');
+          row.className = 'px-2 py-1 rounded hover:bg-[#2a2d2e] cursor-pointer';
+          row.innerHTML = `
+            <div class="flex items-center justify-between text-[11px] text-[#3794ff]">
+              <span class="truncate">${escapeHtml(m.path)}</span>
+              <span class="text-[#858585] shrink-0">:${m.line}</span>
+            </div>
+            <div class="text-[11px] text-[#cccccc] font-mono-vsc truncate">${escapeHtml(m.text)}</div>
+          `;
+          row.onclick = () => {
+            openFile(m.path);
+            if (codeEditor) {
+              codeEditor.revealLineInCenter(m.line);
+              codeEditor.setPosition({ lineNumber: m.line, column: 1 });
+            }
+          };
+          resultsEl.appendChild(row);
+        });
+      }
+
+      // Interactive Terminal
+      function appendTerminal(text, cls = 'text-[#cccccc]') {
+        const div = document.createElement('div');
+        div.className = `${cls} whitespace-pre-wrap`;
+        div.textContent = text;
+        els.terminalHistory.appendChild(div);
+        els.panelTerminal.scrollTop = els.panelTerminal.scrollHeight;
+      }
+
+      function executeTerminal(raw) {
+        const cmd = raw.trim();
+        appendTerminal(`PS C:\\projects\\my-web-app> ${cmd}`, 'text-[#4ec9b0]');
+        if (!cmd) return;
+
+        state.terminalHistoryCmds.push(cmd);
+        state.terminalHistoryIdx = state.terminalHistoryCmds.length;
+
+        if (cmd === 'help') {
+          appendTerminal(
+            'Perintah tersedia:\n  ls                     - Tampilkan semua file\n  cat <path>             - Baca isi file\n  git status             - Cek perubahan file\n  git log                - Riwayat commit\n  git commit -m "pesan"  - Commit lokal\n  git push               - Commit & Push ke GitHub\n  cls / clear            - Bersihkan terminal',
+            'text-[#9cdcfe]'
+          );
+        } else if (cmd === 'cls' || cmd === 'clear') {
+          els.terminalHistory.innerHTML = '';
+        } else if (cmd === 'ls' || cmd === 'dir') {
+          appendTerminal(Object.keys(state.files).sort().join('\n'), 'text-white');
+        } else if (cmd.startsWith('cat ')) {
+          const target = cmd.slice(4).trim();
+          if (Object.prototype.hasOwnProperty.call(state.files, target)) {
+            appendTerminal(state.files[target], 'text-[#d4d4d4]');
+          } else {
+            appendTerminal(`cat: ${target}: No such file or directory`, 'text-[#f14c4c]');
+          }
+        } else if (cmd === 'git status') {
+          const ch = getGitChanges();
+          if (ch.length === 0) {
+            appendTerminal(`On branch ${state.github.branch}\nnothing to commit, working tree clean`, 'text-[#3fb950]');
+          } else {
+            appendTerminal(
+              `On branch ${state.github.branch}\nChanges not staged for commit:\n` +
+                ch.map((c) => `  [${c.status}] ${c.path}`).join('\n'),
+              'text-[#e2c08d]'
+            );
+          }
+        } else if (cmd === 'git log') {
+          appendTerminal(
+            state.commits.map((c) => `commit ${c.sha} (${c.remote ? 'origin' : 'HEAD'}) - ${c.message}`).join('\n'),
+            'text-[#cccccc]'
+          );
+        } else if (cmd.startsWith('git commit')) {
+          const m = cmd.match(/-m\s+["']([^"']+)["']/);
+          commitAndPush({ pushToRemote: false, customMessage: m ? m[1] : 'update: via terminal' });
+        } else if (cmd.startsWith('git push')) {
+          const msg = els.gitCommitMessage.value.trim() || 'update: push via terminal';
+          commitAndPush({ pushToRemote: true, customMessage: msg });
+        } else {
+          appendTerminal(`'${cmd.split(' ')[0]}' is not recognized. Ketik 'help' untuk daftar perintah.`, 'text-[#f14c4c]');
+        }
+      }
+
+      // ==========================================
+      // 12. DRAGGABLE SPLITTERS & EVENT LISTENERS
+      // ==========================================
+      function setupResizers() {
+        let draggingX = false;
+        els.sidebarResizer.addEventListener('mousedown', () => {
+          draggingX = true;
+          els.sidebarResizer.classList.add('active');
+          document.body.style.cursor = 'col-resize';
+        });
+
+        let draggingY = false;
+        els.bottomResizer.addEventListener('mousedown', () => {
+          draggingY = true;
+          els.bottomResizer.classList.add('active');
+          document.body.style.cursor = 'row-resize';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (draggingX) {
+            const newW = Math.min(520, Math.max(170, e.clientX - 48));
+            els.primarySidebar.style.width = `${newW}px`;
+            if (codeEditor) codeEditor.layout();
+            if (diffEditor) diffEditor.layout();
+          }
+          if (draggingY) {
+            const newH = Math.min(450, Math.max(90, window.innerHeight - e.clientY - 22));
+            els.bottomPanel.style.height = `${newH}px`;
+            if (codeEditor) codeEditor.layout();
+            if (diffEditor) diffEditor.layout();
+          }
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (draggingX || draggingY) {
+            draggingX = false;
+            draggingY = false;
+            els.sidebarResizer.classList.remove('active');
+            els.bottomResizer.classList.remove('active');
+            document.body.style.cursor = '';
+          }
+        });
+      }
+
+      // Menu Bar Events
+      document.querySelectorAll('.menu-trigger').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showMenuDropdown(btn.dataset.menu, btn);
+        });
+      });
+      document.addEventListener('click', () => {
+        els.menuDropdown.classList.add('hidden');
+      });
+
+      // Activity Bar
+      document.querySelectorAll('.activity-btn').forEach((btn) => {
+        btn.addEventListener('click', () => switchActivity(btn.dataset.activity));
+      });
+      document.getElementById('activity-account-btn').addEventListener('click', openGitHubModal);
+      document.getElementById('activity-settings-btn').addEventListener('click', () => activateTab('settings'));
+
+      // Header & Status Bar Buttons
+      document.getElementById('command-center-btn').addEventListener('click', () => openCommandPalette(''));
+      document.getElementById('toggle-primary-sidebar-btn').addEventListener('click', () => toggleSidebar());
+      document.getElementById('toggle-bottom-panel-btn').addEventListener('click', () => toggleBottomPanel());
+      document.getElementById('toggle-preview-icon-btn').addEventListener('click', () => togglePreview());
+      document.getElementById('header-gh-btn').addEventListener('click', openGitHubModal);
+      els.headerCommitPushBtn.addEventListener('click', () => commitAndPush({ pushToRemote: true }));
+
+      document.getElementById('status-remote-btn').addEventListener('click', openGitHubModal);
+      document.getElementById('status-branch-btn').addEventListener('click', openGitHubModal);
+      document.getElementById('status-sync-btn').addEventListener('click', () => commitAndPush({ pushToRemote: true }));
+      document.getElementById('status-problems-btn').addEventListener('click', () => {
+        toggleBottomPanel(true);
+        switchBottomTab('problems');
+      });
+      document.getElementById('status-bell-btn').addEventListener('click', () => {
+        showNotification('VS Code Web IDE siap digunakan & siap di-deploy ke GitHub Pages.', 'info');
+      });
+
+      // Explorer Buttons
+      document.getElementById('toggle-open-editors-btn').addEventListener('click', () => {
+        state.openEditorsExpanded = !state.openEditorsExpanded;
+        renderOpenEditors();
+      });
+      document.getElementById('btn-new-file').addEventListener('click', () => createNewFileDialog(''));
+      document.getElementById('btn-new-folder').addEventListener('click', () => createNewFileDialog('folder/'));
+      document.getElementById('btn-collapse-folders').addEventListener('click', () => {
+        state.expandedFolders.clear();
+        renderExplorer();
+      });
+      document.getElementById('btn-reset-workspace').addEventListener('click', () => {
+        state.files = { ...DEFAULT_FILES };
+        state.headFiles = { ...INITIAL_HEAD_FILES };
+        disposeRemovedModels();
+        suppressModelSync = true;
+        Object.keys(state.files).forEach((p) => {
+          const m = ensureMonacoModel(p);
+          if (m) m.setValue(state.files[p]);
+        });
+        suppressModelSync = false;
+        state.openTabs = ['index.html', 'src/style.css', 'src/app.js'];
+        state.activeTab = 'index.html';
+        renderAll();
+        showNotification('Workspace dikembalikan ke proyek awal.', 'info');
+      });
+
+      // Source Control Buttons
+      document.getElementById('git-pull-btn').addEventListener('click', pullFromGitHub);
+      document.getElementById('git-push-icon-btn').addEventListener('click', () => commitAndPush({ pushToRemote: true }));
+      document.getElementById('git-discard-all-btn').addEventListener('click', discardAllChanges);
+      document.getElementById('git-config-gear-btn').addEventListener('click', openGitHubModal);
+      document.getElementById('git-banner-connect-btn').addEventListener('click', openGitHubModal);
+      els.sidebarCommitPushBtn.addEventListener('click', () => commitAndPush({ pushToRemote: true }));
+      els.sidebarCommitOnlyBtn.addEventListener('click', () => commitAndPush({ pushToRemote: false }));
+      els.gitCommitMessage.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          commitAndPush({ pushToRemote: true });
+        }
+      });
+
+      // Extensions & Welcome Buttons
+      document.getElementById('ext-open-gh-btn').addEventListener('click', openGitHubModal);
+      document.getElementById('ext-toggle-preview-btn').addEventListener('click', () => togglePreview());
+      document.getElementById('welcome-new-file').addEventListener('click', () => createNewFileDialog(''));
+      document.getElementById('welcome-connect-gh').addEventListener('click', openGitHubModal);
+      document.getElementById('welcome-commit-push').addEventListener('click', () => commitAndPush({ pushToRemote: true }));
+      document.getElementById('welcome-open-preview').addEventListener('click', () => togglePreview(true));
+
+      // Editor Tab Actions & Preview
+      els.tabActionDiff.addEventListener('click', () => {
+        if (state.activeTab && !state.activeTab.startsWith('diff:')) {
+          openDiffTab(state.activeTab);
+        }
+      });
+      document.getElementById('tab-action-preview').addEventListener('click', () => togglePreview());
+      document.getElementById('refresh-preview-btn').addEventListener('click', updateLivePreview);
+      document.getElementById('close-preview-btn').addEventListener('click', () => togglePreview(false));
+
+      // Search
+      document.getElementById('global-search-input').addEventListener('input', (e) => runGlobalSearch(e.target.value));
+      document.getElementById('clear-search-btn').addEventListener('click', () => {
+        document.getElementById('global-search-input').value = '';
+        runGlobalSearch('');
+      });
+
+      // Settings Controls
+      document.getElementById('setting-theme').addEventListener('change', (e) => {
+        state.editorSettings.theme = e.target.value;
+        if (monacoApi) monacoApi.editor.setTheme(state.editorSettings.theme);
+      });
+      document.getElementById('setting-fontsize').addEventListener('change', (e) => {
+        const size = Math.min(24, Math.max(11, parseInt(e.target.value, 10) || 14));
+        state.editorSettings.fontSize = size;
+        if (codeEditor) codeEditor.updateOptions({ fontSize: size });
+        if (diffEditor) diffEditor.updateOptions({ fontSize: size });
+      });
+      document.getElementById('setting-minimap').addEventListener('change', (e) => {
+        state.editorSettings.minimap = e.target.checked;
+        if (codeEditor) codeEditor.updateOptions({ minimap: { enabled: e.target.checked } });
+      });
+      document.getElementById('setting-wordwrap').addEventListener('change', (e) => {
+        state.editorSettings.wordWrap = e.target.value;
+        if (codeEditor) codeEditor.updateOptions({ wordWrap: e.target.value });
+      });
+
+      // Bottom Panel
+      document.querySelectorAll('.bottom-tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => switchBottomTab(btn.dataset.bottomTab));
+      });
+      document.getElementById('clear-bottom-btn').addEventListener('click', () => {
+        if (state.activeBottomTab === 'git-output') els.panelGitOutput.innerHTML = '';
+        else if (state.activeBottomTab === 'terminal') els.terminalHistory.innerHTML = '';
+      });
+      document.getElementById('close-bottom-btn').addEventListener('click', () => toggleBottomPanel(false));
+
+      els.terminalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const val = els.terminalInput.value;
+          els.terminalInput.value = '';
+          executeTerminal(val);
+        } else if (e.key === 'ArrowUp') {
+          if (state.terminalHistoryIdx > 0) {
+            state.terminalHistoryIdx--;
+            els.terminalInput.value = state.terminalHistoryCmds[state.terminalHistoryIdx] || '';
+          }
+        } else if (e.key === 'ArrowDown') {
+          if (state.terminalHistoryIdx < state.terminalHistoryCmds.length - 1) {
+            state.terminalHistoryIdx++;
+            els.terminalInput.value = state.terminalHistoryCmds[state.terminalHistoryIdx] || '';
+          } else {
+            state.terminalHistoryIdx = state.terminalHistoryCmds.length;
+            els.terminalInput.value = '';
+          }
+        }
+      });
+
+      // Command Palette Events
+      els.paletteBackdrop.addEventListener('click', (e) => {
+        if (e.target === els.paletteBackdrop) closeCommandPalette();
+      });
+      els.paletteInput.addEventListener('input', (e) => renderPaletteList(e.target.value));
+      els.paletteInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeCommandPalette();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (paletteItems.length > 0) {
+            paletteSelectedIdx = (paletteSelectedIdx + 1) % paletteItems.length;
+            highlightPaletteRow();
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (paletteItems.length > 0) {
+            paletteSelectedIdx = (paletteSelectedIdx - 1 + paletteItems.length) % paletteItems.length;
+            highlightPaletteRow();
+          }
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          const chosen = paletteItems[paletteSelectedIdx];
+          if (chosen) {
+            closeCommandPalette();
+            chosen.run();
+          }
+        }
+      });
+
+      function highlightPaletteRow() {
+        Array.from(els.paletteList.children).forEach((el, i) => {
+          el.classList.toggle('bg-[#04395e]', i === paletteSelectedIdx);
+          el.classList.toggle('text-white', i === paletteSelectedIdx);
+        });
+      }
+
+      document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+
+      // Global Shortcuts (Authentic VS Code Keybindings)
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (!els.paletteBackdrop.classList.contains('hidden')) {
+            e.preventDefault();
+            closeCommandPalette();
+            return;
+          }
+          if (!els.modalBackdrop.classList.contains('hidden')) {
+            e.preventDefault();
+            closeModal();
+            return;
+          }
+        }
+
+        if (e.key === 'F1') {
+          e.preventDefault();
+          openCommandPalette('>');
+          return;
+        }
+
+        const mod = e.ctrlKey || e.metaKey;
+        if (!mod) return;
+        const key = e.key.toLowerCase();
+
+        if (e.shiftKey && key === 'p') {
+          e.preventDefault();
+          openCommandPalette('>');
+        } else if (!e.shiftKey && !e.altKey && key === 'p') {
+          e.preventDefault();
+          openCommandPalette('');
+        } else if (e.altKey && key === 'p') {
+          e.preventDefault();
+          commitAndPush({ pushToRemote: true });
+        } else if (e.shiftKey && key === 'e') {
+          e.preventDefault();
+          switchActivity('explorer');
+        } else if (e.shiftKey && key === 'f') {
+          e.preventDefault();
+          switchActivity('search');
+          setTimeout(() => document.getElementById('global-search-input').focus(), 30);
+        } else if (e.shiftKey && key === 'g') {
+          e.preventDefault();
+          switchActivity('git');
+        } else if (key === 'b') {
+          e.preventDefault();
+          toggleSidebar();
+        } else if (key === '`') {
+          e.preventDefault();
+          toggleBottomPanel();
+        } else if (key === ',') {
+          e.preventDefault();
+          activateTab('settings');
+        } else if (key === 's') {
+          e.preventDefault();
+          showNotification('File tersimpan di workspace. Klik Commit & Push untuk mengirim ke GitHub.', 'info');
+        }
+      });
+
+      // ==========================================
+      // 13. BOOT APPLICATION
+      // ==========================================
+      setupResizers();
+      logGit('Visual Studio Code Web Edition siap digunakan.', 'info');
+      logGit('Tip: Deploy file index.html ini ke GitHub Pages, lalu hubungkan PAT GitHub Anda untuk Commit & Push langsung dari browser.', 'normal');
+      renderAll();
+      initMonaco();
+    })();
+  </script>
+</body>
+</html>
